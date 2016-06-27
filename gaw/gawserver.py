@@ -6,7 +6,7 @@ def pluck(d, *args):
     assert isinstance(d, dict)
     return (d[arg] for arg in args)
 
-class Microservice:
+class GawServer:
 
     def __init__(self, ip, port, verbose=False):
         self.ip = ip
@@ -19,14 +19,14 @@ class Microservice:
     def add(self, service_class, *args, **kwargs):
         service_name = service_class.name
 
-        print('microservice: running service', service_name)
+        print('gawserver: running service', service_name)
 
         entry_methods = Entrypoint.get_entrypoints_from_class(service_class)
 
         for method_name in entry_methods:
             path = '{}/{}'.format(service_name, method_name)
 
-            if self.verbose: print('microservice: add path {}'.format(path))
+            if self.verbose: print('gawserver: add path {}'.format(path))
 
             # add path
             self.socketserver.register_route(path, self.router)
@@ -45,7 +45,7 @@ class Microservice:
 
     def router(self, path, **payload):
         if self.verbose:
-            print('microservice: router path:', path)
+            print('gawserver: router path:', path)
 
         cls, method_name, args, kwargs = pluck(self.path[path], 'service_class', 'method_name', 'args', 'kwargs')
 
@@ -58,7 +58,7 @@ class Microservice:
         result = getattr(cls_instance, method_name)(*args, **kwargs)
 
         if self.verbose:
-            print('microservice: result ', result)
+            print('gawserver: result ', result)
 
         return result
 

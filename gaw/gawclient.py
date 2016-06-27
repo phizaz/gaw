@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import
 from gaw.jsonsocketserver import JsonSocketClient
 
-class MicroserviceClient:
+class GawClient:
 
     def __init__(self, ip, port, connection_lifetime = 30, verbose=False,
                  request_maker=None,
@@ -25,7 +25,7 @@ class MicroserviceClient:
             state = 1
             service_name = item
 
-            return MicroserviceClient(
+            return GawClient(
                 ip=self.ip, port=self.port,
                 connection_lifetime=self.connection_lifetime,
                 verbose=self.verbose,
@@ -55,7 +55,7 @@ class MicroserviceClient:
 
         def rpc(*args, **kwargs):
             if verbose:
-                print('microservice client: procedure call path', path, 'args:', args, 'kwargs:', kwargs)
+                print('gawclient: procedure call path', path, 'args:', args, 'kwargs:', kwargs)
 
             return request_maker.request(ip=ip, port=port, path=path,
                                          payload=dict(

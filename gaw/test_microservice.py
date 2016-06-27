@@ -1,22 +1,42 @@
 from __future__ import print_function, absolute_import
-from gaw.microservice import Microservice
+from gaw import GawServer
 from gaw.entrypoint import entrypoint
 
-class TestService(object):
+# class TestService(object):
+#
+#     name = 'test_service'
+#
+#     def __init__(self):
+#         print('init a service')
+#         pass
+#
+#     @entrypoint
+#     def plus(self, a, b):
+#         return a + b
+#
+#     @entrypoint
+#     def multiply(self, a, b):
+#         return a * b
+#
+# service = Microservice('127.0.0.1', 4444, verbose=False)
+# service.add(TestService).run()
 
-    name = 'test_service'
+class MathService(object):
+    name = 'math_service'
 
-    def __init__(self):
-        print('init a service')
-        pass
+    def __init__(self, hello_message):
+        self.hello = hello_message
 
     @entrypoint
     def plus(self, a, b):
-        return a + b
+        return '{}: {}'.format(self.hello, a + b)
 
     @entrypoint
     def multiply(self, a, b):
-        return a * b
+        return '{}: {}'.format(self.hello, a * b)
 
-service = Microservice('127.0.0.1', 4444, verbose=False)
-service.add(TestService).run()
+
+service = GawServer('127.0.0.1', 5555)
+service.add(MathService, hello_message='Hello!')
+service.run()
+

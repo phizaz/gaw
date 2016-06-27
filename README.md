@@ -1,2 +1,6 @@
-# microservice-tools
-A thin and simple library to develop microservices over the TCP socket
+# Gaw
+ 
+*"gaw" means "glue" in Thai*
+
+**Gaw** is a small library that helps you developing microservices with ease.
+
