@@ -95,3 +95,65 @@ In the package, there are other two libraries that **Gaw** makes use of:
 
 1. **Postoffice** - serves as a low-level TCP socket communicator.
 2. **Json Web Server** - this's kinda like a http server for the mere socket world.
+
+## Suggestions
+
+You may have your own "ways" of doing microservice, but I tend to use this pattern.
+
+config.py
+
+```
+MICROSERVICES = dict(
+    AService=dict(
+        ip='<host1>',
+        port=<port1>),
+    BService=dict(
+        ip='<host2>',
+        port=<port2>),
+    CService=dict(
+        ip='<host3>',
+        port=<port3>),
+)
+```
+
+utils.py
+
+```
+from config import MICROSERVICES
+from gaw import GawServer, GawClient
+
+def pluck(d, *args):
+    assert isinstance(d, dict)
+    return (d[arg] for arg in args)
+
+def rpc_of(service_name):
+    ip, port = pluck(MICROSERVICES[service_name], 'ip', 'port')
+    return getattr(GawClient(ip=ip, port=port), service_name) # equals to GawClient(..).<service_name>
+    
+def ip_port_of(service_name):
+    ip, port = pluck(MICROSERVICES[service_name], 'ip', 'port')
+    return ip, port
+
+def run_service(service_class):
+    service_name = service_class.name
+    ip, port = ip_port_of(service_name)
+    GawServer(ip, port).add(service_class).run()
+```
+
+run_server.py
+
+```
+from utils import run_service
+from <service> import AService
+
+run_service(AService)
+```
+
+client.py
+
+```
+from utils import rpc_of
+
+AService = rpc_of('AService')
+AService.<method_name>(...)
+```
