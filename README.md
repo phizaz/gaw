@@ -44,6 +44,8 @@ print(rpc.multiply(10, 20)) # Hello!: 200
 
 **Gaw** is heavily influenced by **Nameko**, another python microservice framework.
 
+*Note: it supports python 3.4, not yet tested with python 2*
+
 ## Installation
 
 ```
