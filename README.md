@@ -2,7 +2,7 @@
  
 *"gaw" means "glue" in Thai*
 
-**Gaw** is a small library that helps you developing microservices with ease.
+**Gaw** is a small library that helps you developing microservices over simple TCP socket with ease.
 
 This is how it works!
 
@@ -42,3 +42,25 @@ print(rpc.plus(10, 20)) # Hello!: 30
 print(rpc.multiply(10, 20)) # Hello!: 200
 ```
 
+**Gaw** is heavily influenced by **Nameko**, another python microservice framework.
+
+## Installation
+
+```
+pip install gaw
+```
+
+## Request Life Cycle
+
+1. **Gaw Client** makes a connection and sends a request packet to a **Gaw Server**.
+2. **Gaw Server**, knowing all the entrypoints, **Gaw Server** *inititates* an instance of a designated class.
+3. **Gaw Server** invokes the requested method.
+4. **Gaw Server** sends back the results to the calling **Gaw Client**.
+
+
+## Topology
+
+In the package, there are other two libraries that **Gaw** makes use of:
+
+1. **Postoffice** - serves as a low-level TCP socket communicator.
+2. **Json Web Server** - this's kinda like a http server for the mere socket world.
