@@ -12,20 +12,20 @@ def get_version_from(file):
     ).group(1)
     return version
 
-version = get_version_from(join(dirname(__file__), 'microservice_tools', '__init__.py'))
+version = get_version_from(join(dirname(__file__), 'gaw', '__init__.py'))
 
 setup(
-    name = 'microservice_tools',
-    packages = ['microservice_tools'],
+    name = 'gaw',
+    packages = ['gaw', 'gaw.jsonsocketserver', 'gaw.postoffice'],
     install_requires=[
         'eventlet'
     ],
     entry_points={},
     version = version,
-    description = 'Global memory micro-webservice with REST interface for multi-node parallelism',
+    description = 'A small library that helps you developing microservices over simple TCP socket with ease',
     author = 'Konpat Preechakul',
     author_email = 'the.akita.ta@gmail.com',
-    url = 'https://github.com/phizaz/microservice_tools', # use the URL to the github repo
-    keywords = ['cache'], # arbitrary keywords
+    url = 'https://github.com/phizaz/gaw', # use the URL to the github repo
+    keywords = ['microservice'] , # arbitrary keywords
     classifiers = [],
 )
