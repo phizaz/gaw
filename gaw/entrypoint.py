@@ -11,7 +11,8 @@ class Entrypoint(object):
 
         def is_method(obj):
             name, val = obj
-            return type(getattr(cls, name)) == types.FunctionType
+            # in Python 2 it uses MetodType, in Python 3 it uses FunctionType
+            return type(getattr(cls, name)) in {types.FunctionType, types.MethodType}
 
         methods = list(filter(is_method, inspect.getmembers(cls)))
         entry_methods = []

@@ -42,9 +42,38 @@ print(rpc.plus(10, 20)) # Hello!: 30
 print(rpc.multiply(10, 20)) # Hello!: 200
 ```
 
+In some scenario, you might need this
+
+```
+from gaw import GawServer, entrypoint
+from somewhere import MathEngine
+
+class MathService(object):
+    name = 'math_service'
+    math_engine = MathEngine()
+
+    def __init__(self, hello_message):
+        self.hello = hello_message
+
+    @entrypoint # expose this method to the rest of the world
+    def plus(self, a, b):
+        return '{}: {}'.format(self.hello, self.math_engine.plus(a, b))
+
+    @entrypoint
+    def multiply(self, a, b):
+        return '{}: {}'.format(self.hello, self.math_engine.multiply(a, b)))
+
+
+service = GawServer('127.0.0.1', 5555)
+service.add(MathService, hello_message='Hello!')
+service.run() # runs forever
+```
+
+In the example above, you can guarantee that there should be only one MathEngine initiated.
+
 **Gaw** is heavily influenced by **Nameko**, another python microservice framework.
 
-*Note: it supports python 3.4, not yet tested with python 2*
+*Note: it supports python 3.4, and tested with python 2.7.9 2*
 
 ## Installation
 
