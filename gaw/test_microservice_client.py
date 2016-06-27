@@ -24,5 +24,5 @@ import time
 # run_many_times()
 client = GawClient('127.0.0.1', 5555)
 rpc = client.math_service
-print(rpc.plus(10, 20))
+print(rpc.plus(a=10, b=20))
 print(rpc.multiply(10, 20))

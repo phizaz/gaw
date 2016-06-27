@@ -67,6 +67,7 @@ class JsonSocketClient:
         return '{}:{}'.format(ip, port)
 
     def _init_client(self, ip, port):
+        # may retry connection many times
         while True:
             try:
                 return PostofficeClient(ip, port, verbose=self.verbose)

@@ -10,10 +10,10 @@ class JsonSocketServer:
         self.port = port
         self.verbose = verbose
 
-        self._all_routes = dict()
+        self._handle_by_route = dict()
 
     def register_route(self, path, handle):
-        self._all_routes[path] = handle
+        self._handle_by_route[path] = handle
 
     def start(self):
         PostofficeServer(self.ip, self.port, self._router, verbose=self.verbose)
@@ -28,7 +28,7 @@ class JsonSocketServer:
 
         try:
             path = request.path
-            fn = self._all_routes[path]
+            fn = self._handle_by_route[path]
         except KeyError as e:
             print('jsonsocketserver: path not found', request.path)
             name = type(e).__name__
@@ -46,12 +46,13 @@ class JsonSocketServer:
             return response.dict()
 
         try:
-            if not isinstance(request.payload, dict):
-                assert request.payload.strip() == ''
-                result = fn(path=path)
-            else:
+            if isinstance(request.payload, dict):
+                # params can only be a dictionary
                 params = request.payload
                 result = fn(path=path, **params)
+            else:
+                assert request.payload.strip() == ''
+                result = fn(path=path)
         except Exception as e:
             # catch all error, and propagate it to the requester
             name = type(e).__name__

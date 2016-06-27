@@ -42,7 +42,7 @@ print(rpc.plus(10, 20)) # Hello!: 30
 print(rpc.multiply(10, 20)) # Hello!: 200
 ```
 
-In some scenario, you might need this
+In some scenarios, you might need this
 
 ```
 from gaw import GawServer, entrypoint

@@ -7,8 +7,7 @@ port = 4444
 
 client = JsonSocketClient()
 
-print(client.request(ip, port, 'plus', dict(a=10.5,
-                                            b=20)))
+print(client.request(ip, port, 'plus', dict(a=10, b=20)))
 
 times = 10000
 start_time = time.time()
