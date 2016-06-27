@@ -73,7 +73,7 @@ In the example above, you can guarantee that there should be only one MathEngine
 
 **Gaw** is heavily influenced by **Nameko**, another python microservice framework.
 
-*Note: it supports python 3.4, and tested with python 2.7.9 2*
+*Note: it supports python 3.4, and tested with python 2.7.9*
 
 ## Installation
 
