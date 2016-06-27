@@ -1,6 +1,5 @@
 from __future__ import print_function, absolute_import
-from gaw import GawServer
-from gaw.entrypoint import entrypoint
+from gaw import GawServer, entrypoint
 
 # class TestService(object):
 #
