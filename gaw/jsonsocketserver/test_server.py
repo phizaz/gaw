@@ -4,6 +4,7 @@ from gaw.jsonsocketserver.server import JsonSocketServer
 def home(path):
     print('home!')
     print('path:', path)
+    raise ValueError('test error')
     return 'welcome home!'
 
 def plus(a, b, path):

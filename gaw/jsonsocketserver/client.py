@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 from gaw.jsonsocketserver.datatype import RequestDataType, ResponseDataType
 from gaw.postoffice import PostofficeClient
 from threading import Thread
+from gaw.jsonsocketserver.exception import JsonSocketException
 import uuid
 import datetime
 import time
@@ -58,7 +59,7 @@ class JsonSocketClient:
                 name = exception['name']
                 message = exception['message']
                 trace = exception['trace']
-                raise Exception('\ntype: {}\nname: {}\nmessage: {}\ntrace: {}'.format(type, name, message, trace))
+                raise JsonSocketException(name=name, message=message, trace=trace)
 
             return response.payload
 
