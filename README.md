@@ -6,32 +6,46 @@
 
 This is how it works!
 
-On the server side
+**On the server side** (say, `services.py`)
 
 ```
-from gaw import GawServer, entrypoint
+from gaw import entrypoint
 
 class MathService(object):
     name = 'math_service'
-
-    def __init__(self, hello_message):
-        self.hello = hello_message
+    
+    def __init__(self, hello_msg):
+    	self.msg = hello_msg
 
     @entrypoint # expose this method to the rest of the world
     def plus(self, a, b):
-        return '{}: {}'.format(self.hello, a + b)
+		return '{}:{}'.format(self.msg, a + b)
 
     @entrypoint
     def multiply(self, a, b):
-        return '{}: {}'.format(self.hello, a * b)
-
-
-service = GawServer('127.0.0.1', 5555)
-service.add(MathService, hello_message='Hello!')
-service.run() # runs forever
+		return '{}:{}'.format(self.msg, a * b)
 ```
 
-On the client side
+You can start the server using `GawServer` like:
+
+```
+from services import MathService
+from gaw import GawServer
+
+GawServer('127.0.0.1', 5555).add(MathService, 'hello!').run() # runs forever
+```
+
+Alternatively, using a command-line interface
+
+```
+$ gaw services --kwargs="hello_msg='hello!'" # runs all services in the module 'services'
+# or
+$ gaw services --service=math_service --kwargs="hello_msg='hello!'"
+```
+
+Anyways, usually, we don't really need the use of parameters like the above.
+
+**On the client side**
 
 ```
 from gaw import GawClient
