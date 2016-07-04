@@ -35,7 +35,7 @@ class MathService(object):
         return '{}: {}'.format(self.hello, a * b)
 
 
-# service = GawServer('127.0.0.1', 5555)
-# service.add(MathService, hello_message='Hello!')
-# service.run()
+service = GawServer('127.0.0.1', 5555, verbose=True, secret='Qx9XFxN17+zkUdcBIGZ0A1sQTkUSP4SZ', is_encrypt=True)
+service.add(MathService, hello_message='Hello!')
+service.run()
 

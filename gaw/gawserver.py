@@ -8,11 +8,13 @@ def pluck(d, *args):
 
 class GawServer:
 
-    def __init__(self, ip, port, verbose=False):
+    def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
         self.port = port
+        self.secret = secret
+        self.is_encrypt = is_encrypt
         self.verbose = verbose
-        self.socketserver = JsonSocketServer(ip, port, verbose=verbose)
+        self.socketserver = JsonSocketServer(ip, port, secret=secret, is_encrypt=is_encrypt, verbose=verbose)
 
         self.path = dict()
 

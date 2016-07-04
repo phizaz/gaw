@@ -22,7 +22,7 @@ import time
 #         client.test_service.plus(a=1, b=2)
 #
 # run_many_times()
-client = GawClient('127.0.0.1', 5555)
+client = GawClient('127.0.0.1', 5555, secret='Qx9XFxN17+zkUdcBIGZ0A1sQTkUSP4SZ', is_encrypt=True, verbose=True)
 rpc = client.math_service
 print(rpc.plus(a=10, b=20))
 print(rpc.multiply(10, 20))

@@ -3,3 +3,4 @@ build
 env2
 gaw.egg-info
 dist
+*.ipynb
