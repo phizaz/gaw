@@ -89,6 +89,16 @@ In the example above, you can guarantee that there should be only one MathEngine
 
 *Note: it supports python 3.4, and tested with python 2.7.9*
 
+## Securities
+
+Since version 0.5, **Gaw** has been suppporting pre-shared key AES CBC encryption and HMAC SHA256 digital signature to provide data authenticity and data cofidentiality.
+
+```
+GawServer(ip=..., port=..., secret=..., is_encrypt=..)
+GawClient(ip=..., port=..., secret=..., is_encrypt=..)
+$ gaw <module_name> --secret=... [--is_encrypt]
+```
+
 ## Installation
 
 ```

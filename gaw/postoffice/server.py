@@ -7,7 +7,7 @@ import traceback
 class PostofficeServer:
 
     def __init__(self, ip, port, on_message, secret=None, is_encrypt=False, verbose=False):
-        print('postoffice: listening on ip:', ip, 'port:', port)
+        print('postoffice: listening on ip:', ip, 'port:', port, 'secret:', secret, 'is_encrypt:', is_encrypt)
 
         self.secret = base64.b64decode(secret) if secret else None
         self.is_encrypt = is_encrypt

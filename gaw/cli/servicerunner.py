@@ -24,6 +24,8 @@ def servicerunner_cli():
     parser.add_argument('--service', type=str)
     parser.add_argument('--port', type=int, default=5555)
     parser.add_argument('--ip', type=str, default='127.0.0.1')
+    parser.add_argument('--secret', type=str)
+    parser.add_argument('--is_encrypt', action='store_true')
     parser.add_argument('--kwargs', type=str)
     args = parser.parse_args()
 
@@ -66,7 +68,7 @@ def servicerunner_cli():
         port = args.port + port_shifting
         try:
             # start the server
-            server = GawServer(args.ip, port)
+            server = GawServer(args.ip, port, secret=args.secret, is_encrypt=args.is_encrypt)
             for name, service_class in selected_services:
                 if args.kwargs:
                     kwargs = eval('dict({})'.format(args.kwargs))
@@ -84,3 +86,6 @@ def servicerunner_cli():
                 continue
             else:
                 raise err
+
+if __name__ == '__main__':
+    servicerunner_cli()
