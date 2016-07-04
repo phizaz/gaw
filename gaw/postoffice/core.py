@@ -88,7 +88,7 @@ def send(socket, data, secret, is_encrypt):
                                   message='You can only send JSON-serializable.')
 
     # send the data
-    socket.send(bytes('{}\n'.format(len(to_send)), 'ascii'))
+    socket.send('{}\n'.format(len(to_send)).encode('ascii'))
     socket.sendall(to_send)
 
 def recieve(socket, secret, is_encrypt):

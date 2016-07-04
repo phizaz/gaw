@@ -8,6 +8,7 @@ import uuid
 import datetime
 import time
 import eventlet
+import traceback
 
 class JsonSocketClient:
 
@@ -41,8 +42,8 @@ class JsonSocketClient:
             except PostofficeException as e:
                 raise e
             except Exception as err:
-                print(err)
                 print('jsonsocketclient: connection error retrying ...')
+                print('jsonsocketclient: err:', err, 'trace:', traceback.format_exc())
                 # delete the old client
                 self._delete(self._key(ip, port, secret, is_encrypt))
                 eventlet.sleep(1)
