@@ -4,8 +4,8 @@ from gaw.postoffice.client import PostofficeClient
 client = PostofficeClient(ip='127.0.0.1',
                           port=4444,
                           secret='anfJdufzm2FSbQca0dD8RgN01SO4Pgn0',
-                          is_encrypt=False,
-                          verbose=False)
+                          is_encrypt=True,
+                          verbose=True)
 
 response = client.send(dict(a='aoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuoa'))
 print('response:', response)

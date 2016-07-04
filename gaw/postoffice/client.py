@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import
 from eventlet.green import socket
 from gaw.postoffice.core import send, recieve
+from gaw.postoffice.exceptions import PostofficeException
 import base64
 
 class PostofficeClient:
@@ -26,7 +27,12 @@ class PostofficeClient:
 
         response = recieve(self.socket, self.secret, is_encrypt=self.is_encrypt)
 
+        if not response['succ']:
+            raise PostofficeException(name=response['name'],
+                                      message=response['message'],
+                                      trace=response['trace'])
+
         if self.verbose:
             print('postofficeclient: receciving done')
 
-        return response
+        return response['data']

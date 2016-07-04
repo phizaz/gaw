@@ -1,7 +1,8 @@
 from __future__ import print_function, absolute_import
 import eventlet
-from gaw.postoffice.core import recieve, send, ConnectionTerminated, DecodeError
+from gaw.postoffice.core import recieve, send, ConnectionTerminated, PostofficeException
 import base64
+import traceback
 
 class PostofficeServer:
 
@@ -22,6 +23,14 @@ class PostofficeServer:
             except (SystemExit, KeyboardInterrupt):
                 break
 
+    def _success(self, payload):
+        return dict(succ=True, data=payload)
+
+    def _fail(self, name, message, trace=None):
+        return dict(succ=False, data=dict(name=name,
+                                          message=message,
+                                          trace=trace))
+
     def _on_connection(self, socket, address):
         if self.verbose:
             print('postoffice: get a connection from', address)
@@ -30,14 +39,25 @@ class PostofficeServer:
         while True:
 
             try:
-                data = recieve(socket, self.secret, is_encrypt=self.is_encrypt)
-                if self.verbose: print('postoffice: get a message ', str(data)[:150], '...')
+                request = recieve(socket, self.secret, is_encrypt=self.is_encrypt)
+                if self.verbose: print('postoffice: get a message ', str(request)[:150], '...')
             except ConnectionTerminated:
                 if self.verbose: print('postoffice: connection ended')
                 return
-            except DecodeError:
-                if self.verbose: print('postoffice: signature verfication failed')
-                continue
+            except PostofficeException as e:
+                if self.verbose: print('postoffice: ', e)
+                wrapped_response = self._fail(name=e.name,
+                                              message=e.message,
+                                              trace=e.trace)
+            except Exception as e:
+                if self.verbose: print('postoffice: exception: ', e)
+                name = type(e).__name__
+                trace = traceback.format_exc()
+                wrapped_response = self._fail(name=name,
+                                              message=e.__str__(),
+                                              trace=trace)
+            else:
+                response = self.on_message(request)
+                wrapped_response = self._success(response)
 
-            response = self.on_message(data)
-            send(socket, response, self.secret, is_encrypt=self.is_encrypt)
+            send(socket, wrapped_response, self.secret, is_encrypt=self.is_encrypt)

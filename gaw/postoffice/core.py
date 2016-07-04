@@ -3,6 +3,7 @@ from Crypto.Cipher import AES
 import random
 from jwt.algorithms import HMACAlgorithm
 from jwt.exceptions import DecodeError
+from gaw.postoffice.exceptions import PostofficeException
 import time
 import base64
 
@@ -12,14 +13,14 @@ class ConnectionTerminated(Exception):
 
 def pad(b, block_size):
     """
-    padding to blocksize according to PKCS #5
+    padding to blocksize according to PKCS #7
     """
     padsize = block_size - len(b) % block_size
     return b + padsize * bytes(bytearray([padsize])) # python 2 compatible
 
 def unpad(b):
     """
-    unpadding according to PKCS #5
+    unpadding according to PKCS #7
     """
     i = bytearray([b[-1]])[0]  # python 2 compatible
     return b[:-i]
@@ -40,15 +41,16 @@ def _verify(b, secret, signature):
     alg = HMACAlgorithm(HMACAlgorithm.SHA256)
     key = alg.prepare_key(secret)
     if not alg.verify(b, key, signature):
-        raise DecodeError('signature verification failed')
+        raise PostofficeException(name='DecodeError',
+                                  message='signature verification failed')
     return True
 
 def attach_signature(payload, secret):
     b_payload = payload.encode('utf-8')
     return _sign(b_payload, secret) + b_payload
 
-def verify_signature(bulk, secret):
-    signature, b_payload = bulk[:32], bulk[32:]
+def verify_signature(b, secret):
+    signature, b_payload = b[:32], b[32:]
     _verify(b_payload, secret, signature)
     payload = b_payload.decode('utf-8')
     return payload
@@ -63,8 +65,8 @@ def encrypt_and_sign(payload, secret):
     ciphertext = cipher.encrypt(pad(signed_payload, 16))
     return iv + ciphertext
 
-def decrypt_and_verify(bulk, secret):
-    iv, ciphertext = bulk[:16], bulk[16:]
+def decrypt_and_verify(b, secret):
+    iv, ciphertext = b[:16], b[16:]
     cipher = AES.new(secret, AES.MODE_CBC, iv)
     signed_payload = unpad(cipher.decrypt(ciphertext))
     payload = verify_signature(signed_payload, secret)
@@ -82,7 +84,8 @@ def send(socket, data, secret, is_encrypt):
         else:
             to_send = payload.encode('utf-8')
     except (TypeError, ValueError) as e:
-        raise Exception('You can only send JSON-serializable.')
+        raise PostofficeException(name='ValueError',
+                                  message='You can only send JSON-serializable.')
 
     # send the data
     socket.send(bytes('{}\n'.format(len(to_send)), 'ascii'))
@@ -123,6 +126,7 @@ def recieve(socket, secret, is_encrypt):
             payload = buffer.tobytes().decode('utf-8')
         data = json.loads(payload)
     except (TypeError, ValueError):
-        raise Exception('Data received was not in JSON or not decryptable format.')
+        raise PostofficeException(name='ValueError',
+                                  message='Data received was not in JSON or not decryptable format.')
 
     return data

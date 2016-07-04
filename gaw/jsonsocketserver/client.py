@@ -2,7 +2,8 @@ from __future__ import print_function, absolute_import
 from gaw.jsonsocketserver.datatype import RequestDataType, ResponseDataType
 from gaw.postoffice import PostofficeClient
 from threading import Thread
-from gaw.jsonsocketserver.exception import JsonSocketException
+from gaw.jsonsocketserver.exceptions import JsonSocketException
+from gaw.postoffice.exceptions import PostofficeException
 import uuid
 import datetime
 import time
@@ -22,10 +23,10 @@ class JsonSocketClient:
         self._cleaner.daemon = True
         self._cleaner.start()
 
-    def request(self, ip, port, path, payload):
+    def request(self, ip, port, path, payload, secret=None, is_encrypt=False):
         # may retry many times
         while True:
-            client = self._get_client(ip, port)
+            client = self._get_client(ip, port, secret, is_encrypt)
             assert isinstance(client, PostofficeClient)
 
             if self.verbose:
@@ -37,10 +38,13 @@ class JsonSocketClient:
 
             try:
                 raw_response = client.send(request.dict())
+            except PostofficeException as e:
+                raise e
             except Exception as err:
+                print(err)
                 print('jsonsocketclient: connection error retrying ...')
                 # delete the old client
-                self._delete(self._key(ip, port))
+                self._delete(self._key(ip, port, secret, is_encrypt))
                 eventlet.sleep(1)
                 # retry
                 continue
@@ -55,7 +59,6 @@ class JsonSocketClient:
 
             if not response.success:
                 exception = response.payload
-                type = exception['type']
                 name = exception['name']
                 message = exception['message']
                 trace = exception['trace']
@@ -64,33 +67,32 @@ class JsonSocketClient:
             return response.payload
 
     # private
-    def _key(self, ip, port):
-        return '{}:{}'.format(ip, port)
+    def _key(self, ip, port, secret, is_encrypt):
+        return '{}:{}:{}:{}'.format(ip, port, secret, is_encrypt)
 
-    def _init_client(self, ip, port):
+    def _init_client(self, ip, port, secret, is_encrypt):
         # may retry connection many times
         while True:
             try:
-                return PostofficeClient(ip, port, verbose=self.verbose)
+                if self.verbose:
+                    print('jsonsocketclient: init client ip: {} port: {} secret: {} is_encrypt: {}'.format(ip, port, secret, is_encrypt))
+                return PostofficeClient(ip, port, verbose=self.verbose,
+                                        secret=secret,
+                                        is_encrypt=is_encrypt)
             except Exception:
                 print('jsonsocketclient: host is down retrying ...')
                 eventlet.sleep(5)
 
-    def _get_client(self, ip, port):
-        key = self._key(ip, port)
+    def _get_client(self, ip, port, secret, is_encrypt):
+        key = self._key(ip, port, secret, is_encrypt)
 
         if key not in self._client_pool:
-            self._client_pool[key] = self._init_client(ip, port)
+            self._client_pool[key] = self._init_client(ip, port, secret, is_encrypt)
 
         self._last_act_at[key] = datetime.datetime.now()
         self._is_busy[key] = True
 
         return self._client_pool[key]
-
-    def _return_client(self, ip, port):
-        key = self._key(ip, port)
-        self._last_act_at[key] = datetime.datetime.now()
-        self._is_busy[key] = False
 
     def _delete(self, key):
         del self._client_pool[key]

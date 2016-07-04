@@ -5,9 +5,11 @@ import traceback
 
 class JsonSocketServer:
 
-    def __init__(self, ip, port, verbose=False):
+    def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
         self.port = port
+        self.secret = secret
+        self.is_encrypt = is_encrypt
         self.verbose = verbose
 
         self._handle_by_route = dict()
@@ -16,7 +18,9 @@ class JsonSocketServer:
         self._handle_by_route[path] = handle
 
     def start(self):
-        PostofficeServer(self.ip, self.port, self._router, verbose=self.verbose)
+        PostofficeServer(self.ip, self.port, self._router,
+                         secret=self.secret, is_encrypt=self.is_encrypt,
+                         verbose=self.verbose)
 
     # private
 
@@ -37,7 +41,6 @@ class JsonSocketServer:
                 resp_to=request.id,
                 success=False,
                 payload=dict(
-                    type='path not found',
                     name=name,
                     message='path: {} not found'.format(request.path),
                     trace=trace
@@ -66,7 +69,6 @@ class JsonSocketServer:
                 resp_to=request.id,
                 success=False,
                 payload=dict(
-                    type='exception',
                     name=name,
                     message=message,
                     trace=trace,
