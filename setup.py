@@ -19,7 +19,8 @@ setup(
     packages = ['gaw',
                 'gaw.jsonsocketserver',
                 'gaw.postoffice',
-                'gaw.cli'],
+                'gaw.cli',
+                'gaw.serializable'],
     install_requires=[
         'future',
         'eventlet',
