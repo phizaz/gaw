@@ -2,6 +2,7 @@ from abc import ABCMeta
 from datetime import datetime
 import dateutil.parser
 from gaw.serializable.exceptions import SerializeError
+import uuid
 
 # support both python 2, 3
 from past.builtins import long, unicode
@@ -37,7 +38,10 @@ class Serializable(object):
                      lambda x: dateutil.parser.parse(x)),
         'tuple': (lambda x: isinstance(x, tuple),
                   lambda x: list(map(Serializable.serialize, x)),
-                  lambda x: tuple(Serializable.parse(x)))
+                  lambda x: tuple(Serializable.parse(x))),
+        'uuid': (lambda x: isinstance(x, uuid.UUID),
+                 lambda x: x.__str__(),
+                 lambda x: uuid.UUID(x))
     }
 
     def dict(self):
