@@ -9,6 +9,7 @@ import datetime
 import time
 import eventlet
 import traceback
+import errno
 
 class JsonSocketClient:
 
@@ -41,13 +42,17 @@ class JsonSocketClient:
                 raw_response = client.send(request.dict())
             except PostofficeException as e:
                 raise e
-            except BrokenPipeError as e:
-                print('jsonsocketclient: connection error retrying ...')
-                # delete the old client
-                self._delete(self._key(ip, port, secret, is_encrypt))
-                eventlet.sleep(1)
-                # retry
-                continue
+            except IOError as e:
+                if e.errno == errno.EPIPE:
+                    print('jsonsocketclient: connection error retrying ...')
+                    # delete the old client
+                    self._delete(self._key(ip, port, secret, is_encrypt))
+                    eventlet.sleep(1)
+                    # retry
+                    continue
+                else:
+                    # unexpected error
+                    raise e
 
             if self.verbose:
                 print('jsonsocketclient: response ', raw_response)

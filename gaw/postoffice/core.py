@@ -2,10 +2,8 @@ import json
 from Crypto.Cipher import AES
 import random
 from jwt.algorithms import HMACAlgorithm
-from jwt.exceptions import DecodeError
 from gaw.postoffice.exceptions import PostofficeException
-import time
-import base64
+from builtins import bytes # python 2, 3 compatible of bytes
 
 class ConnectionTerminated(Exception):
     def __init__(self): super(ConnectionTerminated, self).__init__('Connection Terminated')
@@ -16,14 +14,14 @@ def pad(b, block_size):
     padding to blocksize according to PKCS #7
     """
     padsize = block_size - len(b) % block_size
-    return b + padsize * bytes(bytearray([padsize])) # python 2 compatible
+    return b + padsize * bytes([padsize])
 
 def unpad(b):
     """
     unpadding according to PKCS #7
     """
-    i = bytearray([b[-1]])[0]  # python 2 compatible
-    return b[:-i]
+    b = bytes(b)
+    return b[:-b[-1]]
 
 def get_random_bytes(length):
     ba = bytearray(length)

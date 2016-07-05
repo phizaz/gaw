@@ -4,4 +4,4 @@ from gaw.entrypoint import entrypoint
 from gaw.jsonsocketserver.exceptions import JsonSocketException
 from gaw.postoffice.exceptions import PostofficeException
 
-__version__ = '0.5.2'
+__version__ = '0.5.4'
