@@ -122,7 +122,7 @@ $ gaw <module_name> --secret=... [--is_encrypt]
 
 ## Serializable Library
 
-Since version 0.6, **Gaw** has been shipped with **Serializable Library** with which you can return *any kind* of data types from your service method as long as it is a inheritance of the class `gaw.Serializable`
+Since version 0.6, **Gaw** has been shipped with **Serializable Library** with which you can return (0.6.4; you can supply methods with serializables) *any kind* of data types from your service method as long as it is a inheritance of the class `gaw.Serializable`
 
 For example:
 
@@ -182,66 +182,4 @@ rpc = client.math_service
 
 print(rpc.plus(a=10, b=20).__dict__)
 print(rpc.multiply(10, 20).__dict__)
-```
-
-## Suggestions
-
-You may have your own "ways" of doing microservice, but I tend to use this pattern.
-
-config.py
-
-```
-MICROSERVICES = dict(
-    AService=dict(
-        ip='<host1>',
-        port=<port1>),
-    BService=dict(
-        ip='<host2>',
-        port=<port2>),
-    CService=dict(
-        ip='<host3>',
-        port=<port3>),
-)
-```
-
-utils.py
-
-```
-from config import MICROSERVICES
-from gaw import GawServer, GawClient
-
-def pluck(d, *args):
-    assert isinstance(d, dict)
-    return (d[arg] for arg in args)
-
-def rpc_of(service_name):
-    ip, port = pluck(MICROSERVICES[service_name], 'ip', 'port')
-    return getattr(GawClient(ip=ip, port=port), service_name) # equals to GawClient(..).<service_name>
-    
-def ip_port_of(service_name):
-    ip, port = pluck(MICROSERVICES[service_name], 'ip', 'port')
-    return ip, port
-
-def run_service(service_class):
-    service_name = service_class.name
-    ip, port = ip_port_of(service_name)
-    GawServer(ip, port).add(service_class).run()
-```
-
-run_server.py
-
-```
-from utils import run_service
-from <service> import AService
-
-run_service(AService)
-```
-
-client.py
-
-```
-from utils import rpc_of
-
-AService = rpc_of('AService')
-AService.<method_name>(...)
 ```
