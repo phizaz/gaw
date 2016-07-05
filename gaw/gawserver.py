@@ -56,8 +56,9 @@ class GawServer:
         cls_instance = cls(*args, **kwargs)
 
         # call the designated method
-        args = payload['args']
-        kwargs = payload['kwargs']
+        # with parsed args and kwargs
+        args = Serializable.parse(payload['args'])
+        kwargs = Serializable.parse(payload['kwargs'])
         result = getattr(cls_instance, method_name)(*args, **kwargs)
 
         if self.verbose:

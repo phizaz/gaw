@@ -69,8 +69,9 @@ class GawClient:
             response = request_maker.request(ip=ip, port=port, path=path,
                                              secret=secret, is_encrypt=is_encrypt,
                                              payload=dict(
-                                                 args=args,
-                                                 kwargs=kwargs
+                                                 # support serialize as the arguments
+                                                 args=Serializable.serialize(args),
+                                                 kwargs=Serializable.serialize(kwargs)
                                              ))
 
             # parse the response using Serializable

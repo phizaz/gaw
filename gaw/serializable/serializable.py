@@ -123,11 +123,11 @@ class Serializable(object):
 
         v = obj.get('_v', None)
         t = obj.get('_t', None)
-        if not v and not t:
+        if v is None and t is None:
             # normal dict
             out_dict = dict(zip(obj.keys(), map(cls.parse, obj.values())))
             return out_dict
-        elif v and t:
+        elif v is not None and t is not None:
             if t in cls._default_support_types:
                 # default types
                 return cls.parse_default_support_types(v, t)
