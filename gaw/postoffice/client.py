@@ -8,7 +8,7 @@ class PostofficeClient:
 
     def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
-        self.port = port
+        self.port = int(port)
         self.secret = base64.b64decode(secret) if secret else None
         self.is_encrypt = is_encrypt
         self.verbose = verbose

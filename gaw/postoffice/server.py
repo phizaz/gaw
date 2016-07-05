@@ -9,12 +9,14 @@ class PostofficeServer:
     def __init__(self, ip, port, on_message, secret=None, is_encrypt=False, verbose=False):
         print('postoffice: listening on ip:', ip, 'port:', port, 'secret:', secret, 'is_encrypt:', is_encrypt)
 
+        self.ip = ip
+        self.port = int(port)
+        self.on_message = on_message
         self.secret = base64.b64decode(secret) if secret else None
         self.is_encrypt = is_encrypt
         self.verbose = verbose
-        self.on_message = on_message
 
-        server = eventlet.listen((ip, port))
+        server = eventlet.listen((self.ip, self.port))
         pool = eventlet.GreenPool()
         while True:
             try:
