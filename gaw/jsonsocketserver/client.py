@@ -41,9 +41,8 @@ class JsonSocketClient:
                 raw_response = client.send(request.dict())
             except PostofficeException as e:
                 raise e
-            except Exception as err:
+            except BrokenPipeError as e:
                 print('jsonsocketclient: connection error retrying ...')
-                print('jsonsocketclient: err:', err, 'trace:', traceback.format_exc())
                 # delete the old client
                 self._delete(self._key(ip, port, secret, is_encrypt))
                 eventlet.sleep(1)

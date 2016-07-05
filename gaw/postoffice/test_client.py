@@ -10,12 +10,12 @@ client = PostofficeClient(ip='127.0.0.1',
 response = client.send(dict(a='aoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuaoeuoa'))
 print('response:', response)
 
-import time
-
-rounds = 10000
-start_time = time.time()
-for i in range(rounds):
-    response = client.send(dict(a=u'aoeu'))
-end_time = time.time()
-
-print('each:', (end_time - start_time) / float(rounds) * 1000, 'ms')
+# import time
+#
+# rounds = 10000
+# start_time = time.time()
+# for i in range(rounds):
+#     response = client.send(dict(a=u'aoeu'))
+# end_time = time.time()
+#
+# print('each:', (end_time - start_time) / float(rounds) * 1000, 'ms')

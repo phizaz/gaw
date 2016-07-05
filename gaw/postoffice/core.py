@@ -106,7 +106,7 @@ def recieve(socket, secret, is_encrypt):
         length_str += char
         char = socket.recv(1)
 
-    bulk_length = int(length_str)
+    bulk_length = int(length_str.decode('ascii'))
 
     # get the payload
     buffer = memoryview(bytearray(bulk_length))
