@@ -24,6 +24,7 @@ class Serializable(object):
     __metaclass__ = ABCMeta
 
     _serializable_types = {type(None),
+                           bool,
                            int,
                            long,
                            float,
