@@ -21,9 +21,11 @@ setup(
                 'gaw.postoffice',
                 'gaw.cli'],
     install_requires=[
+        'future',
         'eventlet',
         'PyJWT',
-        'pycrypto'
+        'pycrypto',
+        'python-dateutil',
     ],
     entry_points={
         "console_scripts": ['gaw = gaw.cli.servicerunner:servicerunner_cli']

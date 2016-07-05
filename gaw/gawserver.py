@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import
 from gaw.entrypoint import Entrypoint
 from gaw.jsonsocketserver import JsonSocketServer
+from gaw.serializable.serializable import Serializable
 
 def pluck(d, *args):
     assert isinstance(d, dict)
@@ -62,6 +63,6 @@ class GawServer:
         if self.verbose:
             print('gawserver: result ', result)
 
-        return result
-
-
+        # serialize result using Serializable
+        serialized_result = Serializable.serialize(result)
+        return serialized_result
