@@ -1,10 +1,10 @@
 from abc import ABCMeta
 from datetime import datetime
-from builtins import str, bytes
-import types
-from numbers import Number
 import dateutil.parser
 from gaw.serializable.exceptions import SerializeError
+
+# support both python 2, 3
+from past.builtins import long, unicode
 
 '''
 {
@@ -23,12 +23,12 @@ class Serializable(object):
 
     __metaclass__ = ABCMeta
 
-    _serializable_types = {types.NoneType,
-                           types.IntType,
-                           types.LongType,
-                           types.FloatType,
-                           types.StringType,
-                           types.UnicodeType,}
+    _serializable_types = {type(None),
+                           int,
+                           long,
+                           float,
+                           str,
+                           unicode}
 
     _default_support_types = {
         'datetime': (lambda x: isinstance(x, datetime),
