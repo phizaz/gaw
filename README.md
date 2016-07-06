@@ -19,11 +19,11 @@ class MathService(object):
 
     @entrypoint # expose this method to the rest of the world
     def plus(self, a, b):
-		return '{}:{}'.format(self.msg, a + b)
+		return '{}: {}'.format(self.msg, a + b)
 
     @entrypoint
     def multiply(self, a, b):
-		return '{}:{}'.format(self.msg, a * b)
+		return '{}: {}'.format(self.msg, a * b)
 ```
 
 You can start the server using `GawServer` like:
@@ -52,8 +52,8 @@ from gaw import GawClient
 
 client = GawClient('127.0.0.1', 5555)
 rpc = client.math_service
-print(rpc.plus(10, 20)) # Hello!: 30
-print(rpc.multiply(10, 20)) # Hello!: 200
+print(rpc.plus(10, 20)) # hello!: 30
+print(rpc.multiply(10, 20)) # half-dayello!: 200
 ```
 
 In some scenarios, you might need this
@@ -64,7 +64,7 @@ from somewhere import MathEngine
 
 class MathService(object):
     name = 'math_service'
-    math_engine = MathEngine()
+    math_engine = MathEngine() # only one instance
 
     def __init__(self, hello_message):
         self.hello = hello_message
@@ -95,6 +95,8 @@ In the example above, you can guarantee that there should be only one MathEngine
 pip install gaw
 ```
 
+Due to my limited skills (to support both Python 2 and 3) and hurries, some bugs can really get through my poor testing. However, since I'm also using this library for production, bug fixes should be fast, and `pip install --upgrade --no-cache-dir gaw` should do it.
+
 ## Request Life Cycle
 
 1. **Gaw Client** makes a connection and sends a request packet to a **Gaw Server**.
@@ -119,6 +121,12 @@ GawServer(ip=..., port=..., secret=..., is_encrypt=..)
 GawClient(ip=..., port=..., secret=..., is_encrypt=..)
 $ gaw <module_name> --secret=... [--is_encrypt]
 ```
+
+Note [1] : `secret` parameters are all *base64* encoded strings with the size of 128, 192 or 256 bits.
+
+Note [2] : Keep in mind that adding security and signature verification layers also adds up the overall latency of the server (including loads). However, if a very low latency is not your case, enabling these should not mind you much (latency from 0.3 ms increased to 0.6 ms for small request).
+
+Note [3] : You can enable only the digital signature but not the encryption `is_encrypt=False`. This will not cost your valuable latency that much (from 0.3 ms to ~0.45 ms), yet gives you data authenticity. 
 
 ## Serializable Library
 
