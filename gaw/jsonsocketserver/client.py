@@ -3,7 +3,7 @@ from gaw.jsonsocketserver.datatype import RequestDataType, ResponseDataType
 from gaw.postoffice import PostofficeClient
 from threading import Thread
 from gaw.jsonsocketserver.exceptions import JsonSocketException
-from gaw.postoffice.exceptions import PostofficeException
+from gaw.postoffice.exceptions import PostofficeException, ConnectionTerminated
 import uuid
 import datetime
 import time
@@ -42,6 +42,13 @@ class JsonSocketClient:
                 raw_response = client.send(request.dict())
             except PostofficeException as e:
                 raise e
+            except ConnectionTerminated as e:
+                print('jsonsocketclient: connection reset by peer retrying ...')
+                # delete the old client
+                self._delete(self._key(ip, port, secret, is_encrypt))
+                eventlet.sleep(1)
+                # retry
+                continue
             except IOError as e:
                 if e.errno == errno.EPIPE:
                     print('jsonsocketclient: connection error retrying ...')
