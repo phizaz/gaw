@@ -21,10 +21,10 @@ def unpad(b):
     return b[:-b[-1]]
 
 def get_random_bytes(length):
-    ba = bytearray(length)
+    ba = b''
     for i in range(length):
-        ba[i] = random.getrandbits(8)
-    return bytes(ba)
+        ba += bytes([random.getrandbits(8)])
+    return ba
 
 def _sign(b, secret):
     alg = HMACAlgorithm(HMACAlgorithm.SHA256)
