@@ -2,12 +2,9 @@ import json
 from Crypto.Cipher import AES
 import random
 from jwt.algorithms import HMACAlgorithm
-from gaw.postoffice.exceptions import PostofficeException
+from gaw.postoffice.exceptions import PostofficeException, ConnectionTerminated
 from builtins import bytes # python 2, 3 compatible of bytes
-
-class ConnectionTerminated(Exception):
-    def __init__(self): super(ConnectionTerminated, self).__init__('Connection Terminated')
-
+import traceback
 
 def pad(b, block_size):
     """
@@ -83,7 +80,8 @@ def send(socket, data, secret, is_encrypt):
             to_send = payload.encode('utf-8')
     except (TypeError, ValueError) as e:
         raise PostofficeException(name='ValueError',
-                                  message='You can only send JSON-serializable.')
+                                  message='You can only send JSON-serializable or you did configure the secret key properly',
+                                  trace=traceback.format_exc())
 
     # send the data
     socket.send('{}\n'.format(len(to_send)).encode('ascii'))

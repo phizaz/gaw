@@ -1,3 +1,6 @@
+class ConnectionTerminated(Exception):
+    def __init__(self): super(ConnectionTerminated, self).__init__('Connection Terminated')
+
 class PostofficeException(Exception):
 
     def __init__(self, name, message, trace=None):

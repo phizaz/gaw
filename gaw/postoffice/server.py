@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import
 import eventlet
-from gaw.postoffice.core import recieve, send, ConnectionTerminated, PostofficeException
+from gaw.postoffice.core import recieve, send
+from gaw.postoffice.exceptions import ConnectionTerminated, PostofficeException
 import base64
 import traceback
 
