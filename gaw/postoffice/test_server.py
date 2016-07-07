@@ -9,4 +9,4 @@ PostofficeServer(ip='0.0.0.0',
                  on_message=handle,
                  secret='anfJdufzm2FSbQca0dD8RgN01SO4Pgn0',
                  is_encrypt=True,
-                 verbose=True)
+                 verbose=False)

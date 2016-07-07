@@ -3,7 +3,6 @@ from Crypto.Cipher import AES
 import random
 from jwt.algorithms import HMACAlgorithm
 from gaw.postoffice.exceptions import PostofficeException, ConnectionTerminated
-from builtins import bytes # python 2, 3 compatible of bytes
 import traceback
 
 def pad(b, block_size):
@@ -11,20 +10,20 @@ def pad(b, block_size):
     padding to blocksize according to PKCS #7
     """
     padsize = block_size - len(b) % block_size
-    return b + padsize * bytes([padsize])
+    return b + padsize * bytes(bytearray([padsize])) # python 2 compatible
 
 def unpad(b):
     """
     unpadding according to PKCS #7
     """
-    b = bytes(b)
-    return b[:-b[-1]]
+    i = bytearray([b[-1]])[0]  # python 2 compatible
+    return b[:-i]
 
 def get_random_bytes(length):
-    ba = b''
+    ba = bytearray(length)
     for i in range(length):
-        ba += bytes([random.getrandbits(8)])
-    return ba
+        ba[i] = random.getrandbits(8)
+    return bytes(ba)
 
 def _sign(b, secret):
     alg = HMACAlgorithm(HMACAlgorithm.SHA256)

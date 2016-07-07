@@ -1,9 +1,10 @@
 from __future__ import print_function, absolute_import
-from gaw.jsonsocketserver.datatype import RequestDataType, ResponseDataType
+from gaw.jsonsocketserver.datatype import *
 from gaw.postoffice import PostofficeClient
 from threading import Thread
 from gaw.jsonsocketserver.exceptions import JsonSocketException
 from gaw.postoffice.exceptions import PostofficeException, ConnectionTerminated
+from gaw.serializable.serializable import Serializable
 import uuid
 import datetime
 import time
@@ -31,15 +32,16 @@ class JsonSocketClient:
             client = self._get_client(ip, port, secret, is_encrypt)
             assert isinstance(client, PostofficeClient)
 
-            if self.verbose:
-                print('jsonsocketclient: requesting ip', ip, 'port', port, 'path', path, 'payload', payload)
+            # if self.verbose:
+            #     print('jsonsocketclient: requesting ip', ip, 'port', port, 'path', path, 'payload', payload)
 
             request = RequestDataType(id=uuid.uuid1().int,
                                       path=path,
                                       payload=payload)
+            raw_request = Serializable.serialize(request)
 
             try:
-                raw_response = client.send(request.dict())
+                raw_response = client.send(raw_request)
             except PostofficeException as e:
                 raise e
             except ConnectionTerminated as e:
@@ -62,9 +64,12 @@ class JsonSocketClient:
                     raise e
 
             if self.verbose:
-                print('jsonsocketclient: response ', raw_response)
+                print('jsonsocketclient: raw response ', raw_response)
 
-            response = ResponseDataType.parse(raw_response)
+            response = Serializable.parse(raw_response)
+
+            if self.verbose:
+                print('jsonsocketclien: response', type(response), response.__dict__)
 
             if response.resp_to != request.id:
                 raise ValueError('request error: wrong response id')

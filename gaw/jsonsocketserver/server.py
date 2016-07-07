@@ -1,6 +1,7 @@
 from __future__ import print_function
-from gaw.jsonsocketserver.datatype import RequestDataType, ResponseDataType
+from gaw.jsonsocketserver.datatype import *
 from gaw.postoffice import PostofficeServer
+from gaw.serializable.serializable import Serializable
 import traceback
 
 class JsonSocketServer:
@@ -28,7 +29,7 @@ class JsonSocketServer:
         if self.verbose:
             print('jsonsocketserver: router got message:', str(message)[:100], '...')
 
-        request = RequestDataType.parse(message)
+        request = Serializable.parse(message)
 
         try:
             path = request.path
@@ -46,7 +47,7 @@ class JsonSocketServer:
                     trace=trace
                 )
             )
-            return response.dict()
+            return Serializable.serialize(response)
 
         try:
             if isinstance(request.payload, dict):
@@ -74,10 +75,11 @@ class JsonSocketServer:
                     trace=trace,
                 )
             )
-            return response.dict()
+            return Serializable.serialize(response)
 
         # send response back to the requester
         response = ResponseDataType(resp_to=request.id,
                                     success=True,
                                     payload=result)
-        return response.dict()
+        raw_response = Serializable.serialize(response)
+        return raw_response

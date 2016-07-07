@@ -1,6 +1,5 @@
 from __future__ import print_function, absolute_import
 from gaw.jsonsocketserver import JsonSocketClient
-from gaw.serializable.serializable import Serializable
 
 class GawClient:
 
@@ -66,16 +65,14 @@ class GawClient:
             if verbose:
                 print('gawclient: procedure call path', path, 'args:', args, 'kwargs:', kwargs)
 
+            # note: parsing and serializing the response is now the job of json socket server
             response = request_maker.request(ip=ip, port=port, path=path,
                                              secret=secret, is_encrypt=is_encrypt,
                                              payload=dict(
-                                                 # support serialize as the arguments
-                                                 args=Serializable.serialize(args),
-                                                 kwargs=Serializable.serialize(kwargs)
+                                                 args=args,
+                                                 kwargs=kwargs
                                              ))
 
-            # parse the response using Serializable
-            parsed_response = Serializable.parse(response)
-            return parsed_response
+            return response
 
         return rpc

@@ -8,6 +8,9 @@ port = 4444
 
 client = JsonSocketClient(verbose=True)
 
+# test none
+print(client.request(ip, port, 'none', dict(), secret='Qx9XFxN17+zkUdcBIGZ0A1sQTkUSP4SZ', is_encrypt=True))
+
 # test client side error handling
 try:
     print(client.request(ip, port, 'home', dict(), secret='Qx9XFxN17+zkUdcBIGZ0A1sQTkUSP4SZ', is_encrypt=True))

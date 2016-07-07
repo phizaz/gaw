@@ -3,10 +3,9 @@ from eventlet.green import socket
 from gaw.postoffice.core import send, recieve
 from gaw.postoffice.exceptions import PostofficeException
 import base64
-from threading import Thread
 from queue import Queue
 
-class PostofficeClient:
+class PostofficeClient(object):
 
     def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
@@ -18,17 +17,14 @@ class PostofficeClient:
         self.socket = socket.socket()
         self.socket.connect((ip, port))
 
-        self.queue = Queue()
-        Thread(target=self._process_queue).start()
+        self.run_token = Queue()
+        self.run_token.put(True)
 
     def send(self, data):
-        self.queue.put(data)
-
-    def _process_queue(self):
-        while True:
-            data = self.queue.get()
-            self._process_job(data)
-            self.queue.task_done()
+        token = self.run_token.get()
+        result = self._process_job(data)
+        self.run_token.put(token)
+        return result
 
     def _process_job(self, data):
         if self.verbose:

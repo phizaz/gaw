@@ -1,7 +1,6 @@
 from __future__ import print_function, absolute_import
 from gaw.entrypoint import Entrypoint
 from gaw.jsonsocketserver import JsonSocketServer
-from gaw.serializable.serializable import Serializable
 
 def pluck(d, *args):
     assert isinstance(d, dict)
@@ -55,15 +54,13 @@ class GawServer:
         # init a new instance of the class
         cls_instance = cls(*args, **kwargs)
 
+        # note: parsing and serializing the response is now the job of json socket server
         # call the designated method
-        # with parsed args and kwargs
-        args = Serializable.parse(payload['args'])
-        kwargs = Serializable.parse(payload['kwargs'])
+        args = payload['args']
+        kwargs = payload['kwargs']
         result = getattr(cls_instance, method_name)(*args, **kwargs)
 
         if self.verbose:
             print('gawserver: result ', result)
 
-        # serialize result using Serializable
-        serialized_result = Serializable.serialize(result)
-        return serialized_result
+        return result
