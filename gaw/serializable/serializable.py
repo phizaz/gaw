@@ -72,6 +72,13 @@ class Serializable(object):
         return None
 
     @classmethod
+    def json_default_support_types(cls, obj):
+        for type_name, (test_fn, serial_fn, parse_fn) in cls._default_support_types.items():
+            if test_fn(obj):
+                return serial_fn(obj)
+        return None
+
+    @classmethod
     def parse_default_support_types(cls, val, type):
         test_fn, serial_fn, parse_fn = cls._default_support_types.get(type)
         return parse_fn(val)
@@ -109,6 +116,36 @@ class Serializable(object):
 
         # must be an unknown !
         raise SerializeError('cannot serialize an unknown type of {}'.format(type(obj)))
+
+    @classmethod
+    def json(cls, obj):
+        '''
+        Serialize without preserving the structure (but should be more compatible)
+        '''
+
+        if type(obj) in cls._serializable_types:
+            return obj
+
+        # if it is a list
+        if isinstance(obj, list):
+            out_list = list(map(cls.json, obj))
+            return out_list
+
+        # a dict
+        if isinstance(obj, dict):
+            out_dict = dict(zip(obj.keys(), map(cls.json, obj.values())))
+            return out_dict
+
+        # test default supported types
+        default_serial = cls.json_default_support_types(obj)
+        if default_serial:
+            return default_serial
+
+        if hasattr(obj, '__dict__'):
+            out_dict = dict(zip(obj.__dict__.keys(), map(cls.json, obj.__dict__.values())))
+            return out_dict
+
+        raise SerializeError('cannot json an unknown type of {}'.format(type(obj)))
 
     @classmethod
     def parse(cls, obj):

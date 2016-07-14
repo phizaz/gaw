@@ -18,6 +18,7 @@ da = a.dict()
 print(da)
 aa = Serializable.parse(da)
 print(aa.a, aa.b.c)
+print('json:', Serializable.json(a))
 
 # test list
 a = [10, ['aoeu', B(10)], 10.10, A(10, 20)]
@@ -49,3 +50,14 @@ print(b['c'])
 print(b['c']['a'].__dict__)
 print(b['c']['b'].__dict__)
 print(b['d'].__dict__)
+
+print('json:', Serializable.json(a))
+
+class C(object):
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+c = C(a=datetime.now(), b=a)
+print('json:', Serializable.json(c))
