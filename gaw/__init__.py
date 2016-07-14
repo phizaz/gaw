@@ -8,4 +8,4 @@ from gaw.jsonsocketserver.exceptions import JsonSocketException
 from gaw.postoffice.exceptions import PostofficeException
 from gaw.serializable.exceptions import SerializeError
 
-__version__ = '0.6.9'
+__version__ = '0.6.11'

@@ -61,3 +61,15 @@ class C(object):
 
 c = C(a=datetime.now(), b=a)
 print('json:', Serializable.json(c))
+
+class D(object):
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def __iter__(self):
+        for k, v in self.__dict__.items():
+            yield k, v
+
+print('json:', Serializable.json(D(10, 20)))
