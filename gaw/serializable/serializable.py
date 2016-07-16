@@ -96,7 +96,7 @@ class Serializable(object):
 
         # a dict
         if isinstance(obj, dict):
-            out_dict = {k: cls.json(v) for k, v in obj.items()}
+            out_dict = {k: cls.serialize(v) for k, v in obj.items()}
             return out_dict
 
         # test default supported types
@@ -134,6 +134,9 @@ class Serializable(object):
         # a dict
         if isinstance(obj, dict):
             out_dict = {k: cls.json(v) for k, v in obj.items() }
+            # remove types
+            if '_v' in out_dict and '_t' in out_dict:
+                out_dict = out_dict['_v']
             return out_dict
 
         # test default supported types
@@ -143,10 +146,16 @@ class Serializable(object):
 
         if hasattr(obj, '__iter__'):
             out_dict = { k: cls.json(v) for k, v in dict(obj).items() }
+            # remove types
+            if '_v' in out_dict and '_t' in out_dict:
+                out_dict = out_dict['_v']
             return out_dict
 
         if hasattr(obj, '__dict__'):
             out_dict = {k: cls.json(v) for k, v in obj.__dict__.items() }
+            # remove types
+            if '_v' in out_dict and '_t' in out_dict:
+                out_dict = out_dict['_v']
             return out_dict
 
         raise SerializeError('cannot json an unknown type of {}'.format(type(obj)))
@@ -158,7 +167,7 @@ class Serializable(object):
             out_list = list(map(cls.parse, obj))
             return out_list
 
-        # premitive types
+        # primitive types
         if not isinstance(obj, dict):
             return obj
 
