@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import
-import eventlet
 from gaw.postoffice.core import recieve, send
 from gaw.postoffice.exceptions import ConnectionTerminated, PostofficeException
+import SocketServer
 import base64
 import traceback
 
@@ -17,50 +17,58 @@ class PostofficeServer:
         self.is_encrypt = is_encrypt
         self.verbose = verbose
 
-        server = eventlet.listen((self.ip, self.port))
-        pool = eventlet.GreenPool()
-        while True:
-            try:
-                socket, address = server.accept()
-                pool.spawn_n(self._on_connection, socket, address)
-            except (SystemExit, KeyboardInterrupt):
-                break
+        POSTOFFICE = self # shared with the classes inside
 
-    def _success(self, payload):
-        return dict(succ=True, data=payload)
+        class TCPHandler(SocketServer.BaseRequestHandler):
+            '''
+            declaring a class inside a class is not a good practice but it is neccessary in this case
+            because we want to be able to share the 'self' from PostofficeServer
+            '''
 
-    def _fail(self, name, message, trace=None):
-        return dict(succ=False, data=dict(name=name,
-                                          message=message,
-                                          trace=trace))
+            def _success(self, payload):
+                return dict(succ=True, data=payload)
 
-    def _on_connection(self, socket, address):
-        if self.verbose:
-            print('postoffice: get a connection from', address)
+            def _fail(self, name, message, trace=None):
+                return dict(succ=False, data=dict(name=name,
+                                                  message=message,
+                                                  trace=trace))
 
-        # loop until connection terminated
-        while True:
+            def handle(self):
+                socket = self.request
+                address = self.client_address
 
-            try:
-                request = recieve(socket, self.secret, is_encrypt=self.is_encrypt)
-                if self.verbose: print('postoffice: get a message ', str(request)[:150], '...')
-            except ConnectionTerminated:
-                if self.verbose: print('postoffice: connection ended')
-                return
-            except PostofficeException as e:
-                if self.verbose: print('postoffice: ', e)
-                wrapped_response = self._fail(name=e.name,
-                                              message=e.message,
-                                              trace=e.trace)
-            except Exception as e:
-                if self.verbose: print('postoffice: exception: ', e)
-                name = type(e).__name__
-                trace = traceback.format_exc()
-                wrapped_response = self._fail(name=name,
-                                              message=e.__str__(),
-                                              trace=trace)
-            else:
-                response = self.on_message(request)
-                wrapped_response = self._success(response)
+                if POSTOFFICE.verbose:
+                    print('postoffice: get a connection from', address)
 
-            send(socket, wrapped_response, self.secret, is_encrypt=self.is_encrypt)
+                # loop until connection terminated
+                while True:
+
+                    try:
+                        request = recieve(socket, POSTOFFICE.secret, is_encrypt=POSTOFFICE.is_encrypt)
+                        if POSTOFFICE.verbose: print('postoffice: get a message ', str(request)[:150], '...')
+                    except ConnectionTerminated:
+                        if POSTOFFICE.verbose: print('postoffice: connection ended')
+                        return
+                    except PostofficeException as e:
+                        if POSTOFFICE.verbose: print('postoffice: ', e)
+                        wrapped_response = self._fail(name=e.name,
+                                                      message=e.message,
+                                                      trace=e.trace)
+                    except Exception as e:
+                        if POSTOFFICE.verbose: print('postoffice: exception: ', e)
+                        name = type(e).__name__
+                        trace = traceback.format_exc()
+                        wrapped_response = self._fail(name=name,
+                                                      message=e.__str__(),
+                                                      trace=trace)
+                    else:
+                        response = POSTOFFICE.on_message(request)
+                        wrapped_response = self._success(response)
+
+                    send(socket, wrapped_response, POSTOFFICE.secret, is_encrypt=POSTOFFICE.is_encrypt)
+
+        class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+            pass
+
+        self.server = ThreadedTCPServer((self.ip, self.port), TCPHandler)
+        self.server.serve_forever()
