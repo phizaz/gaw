@@ -41,7 +41,10 @@ class Serializable(object):
                   lambda x: tuple(Serializable.parse(x))),
         'uuid': (lambda x: isinstance(x, uuid.UUID),
                  lambda x: x.__str__(),
-                 lambda x: uuid.UUID(x))
+                 lambda x: uuid.UUID(x)),
+        'set': (lambda x: isinstance(x, set),
+                lambda x: list(map(Serializable.serialize, x)),
+                lambda x: set(Serializable.parse(x))),
     }
 
     def dict(self):
