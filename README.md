@@ -4,6 +4,13 @@
 
 **Gaw** is a small library that helps you developing microservices over simple TCP socket with ease.
 
+**Gaw** now comes with 2 flavors (version 0.7).
+
+1. Simple (without code suggestion)
+2. Improved (with code suggestion)
+
+## Simple Gaw
+
 This is how it works!
 
 **On the server side** (say, `services.py`)
@@ -85,6 +92,48 @@ service.run() # runs forever
 
 In the example above, you can guarantee that there should be only one MathEngine initiated.
 
+## Improved Gaw
+
+(version 0.7) For better code suggestion (and IDE support), you can define an `@interface_class`, `@service_class` and `@client_class` as follows:
+
+**On the server side**
+
+file: `server.py`
+
+```
+from gaw import GawServer, interface_class, service_class
+
+@interface_class
+class Interface(object):
+    name = 'Service'
+
+    def plus(self, a, b): pass
+
+@service_class
+class Service(Interface):
+
+    def plus(self, a, b):
+        return a + b
+        
+GawServer(ip='0.0.0.0', port=5555).add(Service).run()
+```
+
+**On the client side**
+
+```
+from server import Interface
+from gaw import client_class
+
+@client_class(ip='localhost', port=5555)
+class Service(Interface): pass
+
+service = Service()
+
+print(service.plus(10, 20)) # outputs: 30
+```
+
+Now, IDE's code suggestion will work normally on the remote service (of course, because we define the "template", aka `@interface_class`, first).
+
 **Gaw** is heavily influenced by **Nameko**, another python microservice framework.
 
 *Note: it supports python 3.4, and tested with python 2.7.9*
@@ -130,7 +179,7 @@ Note [3] : You can enable only the digital signature but not the encryption `is_
 
 ## Serializable Library
 
-Since version 0.6, **Gaw** has been shipped with **Serializable Library** with which you can return (0.6.4; you can supply methods with serializables) *any kind* of data types from your service method as long as it is a inheritance of the class `gaw.Serializable`
+Since version 0.6, **Gaw** has been being shipped with **Serializable Library** with which you can return (0.6.4; you can supply methods with serializables) *any kind* of data types from your service method as long as it is a inheritance of the class `gaw.Serializable`
 
 For example:
 
