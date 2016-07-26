@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import
 from gaw.postoffice.core import recieve, send
 from gaw.postoffice.exceptions import ConnectionTerminated, PostofficeException
-import SocketServer
+import socketserver
 import base64
 import traceback
 
@@ -19,7 +19,7 @@ class PostofficeServer:
 
         POSTOFFICE = self # shared with the classes inside
 
-        class TCPHandler(SocketServer.BaseRequestHandler):
+        class TCPHandler(socketserver.BaseRequestHandler):
             '''
             declaring a class inside a class is not a good practice but it is neccessary in this case
             because we want to be able to share the 'self' from PostofficeServer
@@ -67,7 +67,7 @@ class PostofficeServer:
 
                     send(socket, wrapped_response, POSTOFFICE.secret, is_encrypt=POSTOFFICE.is_encrypt)
 
-        class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+        class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             pass
 
         self.server = ThreadedTCPServer((self.ip, self.port), TCPHandler)

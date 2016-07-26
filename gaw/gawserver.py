@@ -77,15 +77,14 @@ def interface_class(cls):
     assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
     setattr(cls, INTERFACE_CLASS_ATTR, True)
 
-    for name, obj in inspect.getmembers(cls):
-        if inspect.ismethod(obj):
-            @wraps(obj)
-            def wrapper(*args, **kwargs):
-                return obj(*args, **kwargs)
+    for name, obj in inspect.getmembers(cls, predicate=lambda x: inspect.isfunction(x) or inspect.ismethod(x)): # for python 2 and 3 support
+        @wraps(obj)
+        def wrapper(*args, **kwargs):
+            return obj(*args, **kwargs)
 
-            setattr(wrapper, INTERFACE_CLASS_METHOD_ATTR, True)
+        setattr(wrapper, INTERFACE_CLASS_METHOD_ATTR, True)
 
-            setattr(cls, name, wrapper)
+        setattr(cls, name, wrapper)
 
     return cls
 

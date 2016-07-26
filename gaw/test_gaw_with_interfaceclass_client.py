@@ -5,7 +5,7 @@ from test_gaw_with_interfaceclass import Interface
 class Service(Interface): pass
 
 service = Service()
-service.plus(10, 20)
+print(service.plus(10, 20))
 
 import time
 

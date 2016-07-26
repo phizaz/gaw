@@ -1,4 +1,4 @@
-from gawserver import GawServer, interface_class, service_class
+from gaw.gawserver import GawServer, interface_class, service_class
 
 @interface_class
 class Interface(object):
