@@ -1,11 +1,11 @@
 import types
-from functools import partial
+from functools import partial, wraps
 import inspect
 
-ENTRYPOINT_ATTR = 'microservice_entrypoint'
+ENTRYPOINT_ATTR = '__gaw_entrypoint__'
+
 
 class Entrypoint(object):
-
     @staticmethod
     def get_entrypoints_from_class(cls):
 
@@ -50,4 +50,6 @@ class Entrypoint(object):
             #     pass
             return partial(registering_decorator, args=args, kwargs=kwargs)
 
+
+# export entrypoint
 entrypoint = Entrypoint.decorator

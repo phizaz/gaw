@@ -1,12 +1,16 @@
 from __future__ import print_function, absolute_import
 from gaw.jsonsocketserver import JsonSocketClient
+from gaw.gawserver import INTERFACE_CLASS_ATTR, INTERFACE_CLASS_METHOD_ATTR
+import inspect
+from functools import wraps
 
-class GawClient:
 
+class GawClient(object):
     def __init__(self, ip, port, secret=None, is_encrypt=False,
-                 connection_lifetime = 30, verbose=False,
-                 request_maker=None,
+                 connection_lifetime=30, verbose=False,
+                 _request_maker=None,
                  _state=0, _service_name=None, _method_name=None):
+
         self.ip = ip
         self.port = port
         self.secret = secret
@@ -14,10 +18,10 @@ class GawClient:
         self.connection_lifetime = connection_lifetime
         self.verbose = verbose
 
-        if request_maker is None:
-            self.request_maker = JsonSocketClient(client_lifetime=connection_lifetime, verbose=verbose)
+        if _request_maker is None:
+            self._request_maker = JsonSocketClient(client_lifetime=connection_lifetime, verbose=verbose)
         else:
-            self.request_maker = request_maker
+            self._request_maker = _request_maker
 
         self._state = _state
         self._service_name = _service_name
@@ -34,7 +38,7 @@ class GawClient:
                 secret=self.secret, is_encrypt=self.is_encrypt,
                 connection_lifetime=self.connection_lifetime,
                 verbose=self.verbose,
-                request_maker=self.request_maker,
+                _request_maker=self._request_maker,
                 _state=state,
                 _service_name=service_name,
                 _method_name=self._method_name
@@ -49,7 +53,7 @@ class GawClient:
                 port=self.port,
                 secret=self.secret,
                 is_encrypt=self.is_encrypt,
-                request_maker=self.request_maker,
+                request_maker=self._request_maker,
                 verbose=self.verbose
             )
         else:
@@ -76,3 +80,41 @@ class GawClient:
             return response
 
         return rpc
+
+
+def client_class(ip, port, secret=None, is_encrypt=False, connection_lifetime=30, verbose=False):
+    '''
+    GawClient class decorator, the class must inherit from a class of Interface, decorated using interface_class
+    this client will directly point to that service
+    '''
+    client = GawClient(ip=ip, port=port, secret=secret, is_encrypt=is_encrypt, connection_lifetime=connection_lifetime,
+                       verbose=verbose)
+
+    def decorator(cls):
+        base = [
+            c
+            for c in inspect.getmro(cls)
+            if c is not cls and hasattr(c, INTERFACE_CLASS_ATTR)
+            ]
+
+        assert len(base) == 1, 'should have only one interface_class decorated class'
+
+        intf_cls = base.pop()
+
+        assert hasattr(intf_cls, INTERFACE_CLASS_ATTR), 'intf_cls should be decorated by interface_class'
+        service_name = intf_cls.name
+
+        for name, obj in inspect.getmembers(cls):
+            if hasattr(obj, INTERFACE_CLASS_METHOD_ATTR):
+                service_client = getattr(client, service_name)
+                method = getattr(service_client, name)
+
+                @wraps(obj)
+                def wrapper(self, *args, **kwargs):
+                    return method(*args, **kwargs)
+
+                setattr(cls, name, wrapper)
+
+        return cls
+
+    return decorator

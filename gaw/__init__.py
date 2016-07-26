@@ -1,5 +1,5 @@
 from gaw.gawclient import GawClient
-from gaw.gawserver import GawServer
+from gaw.gawserver import GawServer, interface_class, service_class
 from gaw.entrypoint import entrypoint
 from gaw.serializable.serializable import Serializable
 
@@ -8,4 +8,4 @@ from gaw.jsonsocketserver.exceptions import JsonSocketException
 from gaw.postoffice.exceptions import PostofficeException
 from gaw.serializable.exceptions import SerializeError
 
-__version__ = '0.6.14'
+__version__ = '0.7.0'

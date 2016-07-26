@@ -1,12 +1,17 @@
 from __future__ import print_function, absolute_import
-from gaw.entrypoint import Entrypoint
+from gaw.entrypoint import Entrypoint, entrypoint
 from gaw.jsonsocketserver import JsonSocketServer
+from functools import wraps
+import inspect
+
+INTERFACE_CLASS_ATTR = '__gaw_interface_class__'
+INTERFACE_CLASS_METHOD_ATTR = '__gaw_interface_class_method__'
 
 def pluck(d, *args):
     assert isinstance(d, dict)
     return (d[arg] for arg in args)
 
-class GawServer:
+class GawServer(object):
 
     def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
@@ -64,3 +69,59 @@ class GawServer:
             print('gawserver: result ', result)
 
         return result
+
+def interface_class(cls):
+    '''
+    wrap a class in which all methods are "entrypoints", and is a template for service client
+    '''
+    assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
+    setattr(cls, INTERFACE_CLASS_ATTR, True)
+
+    for name, obj in inspect.getmembers(cls):
+        if inspect.ismethod(obj):
+            @wraps(obj)
+            def wrapper(*args, **kwargs):
+                return obj(*args, **kwargs)
+
+            setattr(wrapper, INTERFACE_CLASS_METHOD_ATTR, True)
+
+            setattr(cls, name, wrapper)
+
+    return cls
+
+
+def service_class(cls):
+    '''
+    wrap a class in which methods according to intf_cls are entrypoints
+    '''
+
+    base = [
+        c
+        for c in inspect.getmro(cls)
+        if c is not cls and hasattr(c, INTERFACE_CLASS_ATTR)
+        ]
+
+    assert len(base) == 1, 'should have only one interface_class decorated class'
+
+    intf_cls = base.pop()
+
+    assert hasattr(intf_cls, INTERFACE_CLASS_ATTR), 'intf_cls should be decorated by interface_class'
+    assert hasattr(intf_cls, 'name'), 'intf_cls should have a name defined'
+
+    intf_methods = [
+        name
+        for name, obj in inspect.getmembers(intf_cls)
+        if hasattr(obj, INTERFACE_CLASS_METHOD_ATTR)
+        ]
+
+    for name in intf_methods:
+        method = getattr(cls, name)
+
+        @entrypoint
+        @wraps(method)
+        def wrapper(*args, **kwargs):
+            return method(*args, **kwargs)
+
+        setattr(cls, name, wrapper)
+
+    return cls
