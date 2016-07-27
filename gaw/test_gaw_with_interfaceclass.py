@@ -6,11 +6,16 @@ class Interface(object):
 
     def plus(self, a, b): pass
 
+    def multi(self, a, b): pass
+
 @service_class
 class Service(Interface):
 
     def plus(self, a, b):
         return a + b
+
+    def multi(self, a, b):
+        return a * b
 
 if __name__ == '__main__':
     GawServer(ip='0.0.0.0', port=3500).add(Service).run()

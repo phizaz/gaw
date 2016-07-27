@@ -3,6 +3,7 @@ from gaw.entrypoint import Entrypoint, entrypoint
 from gaw.jsonsocketserver import JsonSocketServer
 from functools import wraps
 import inspect
+from abc import abstractmethod
 
 INTERFACE_CLASS_ATTR = '__gaw_interface_class__'
 INTERFACE_CLASS_METHOD_ATTR = '__gaw_interface_class_method__'
@@ -113,14 +114,16 @@ def service_class(cls):
         if hasattr(obj, INTERFACE_CLASS_METHOD_ATTR)
         ]
 
-    for name in intf_methods:
+    def method_by(cls, name):
         method = getattr(cls, name)
 
         @entrypoint
         @wraps(method)
         def wrapper(*args, **kwargs):
             return method(*args, **kwargs)
+        return wrapper
 
-        setattr(cls, name, wrapper)
+    for name in intf_methods:
+        setattr(cls, name, method_by(cls, name))
 
     return cls

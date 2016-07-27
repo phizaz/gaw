@@ -103,17 +103,20 @@ def client_class(ip, port, secret=None, is_encrypt=False, connection_lifetime=30
 
         assert hasattr(intf_cls, INTERFACE_CLASS_ATTR), 'intf_cls should be decorated by interface_class'
         service_name = intf_cls.name
+        service_client = getattr(client, service_name)
+
+        def method_by(name):
+            method = getattr(service_client, name)
+
+            @wraps(obj)
+            def wrapper(self, *args, **kwargs):
+                return method(*args, **kwargs)
+
+            return wrapper
 
         for name, obj in inspect.getmembers(cls):
             if hasattr(obj, INTERFACE_CLASS_METHOD_ATTR):
-                service_client = getattr(client, service_name)
-                method = getattr(service_client, name)
-
-                @wraps(obj)
-                def wrapper(self, *args, **kwargs):
-                    return method(*args, **kwargs)
-
-                setattr(cls, name, wrapper)
+                setattr(cls, name, method_by(name))
 
         return cls
 
