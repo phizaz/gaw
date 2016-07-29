@@ -19,6 +19,8 @@ class PostofficeServer:
 
         POSTOFFICE = self # shared with the classes inside
 
+        socketserver.TCPServer.allow_reuse_address = True
+
         class TCPHandler(socketserver.BaseRequestHandler):
             '''
             declaring a class inside a class is not a good practice but it is neccessary in this case

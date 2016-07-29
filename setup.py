@@ -23,7 +23,6 @@ setup(
                 'gaw.serializable'],
     install_requires=[
         'future',
-        'eventlet',
         'PyJWT',
         'pycrypto',
         'python-dateutil',

@@ -71,23 +71,30 @@ class GawServer(object):
 
         return result
 
-def interface_class(cls):
-    '''
-    wrap a class in which all methods are "entrypoints" by adding a flag to it, and is a template for service client
-    '''
-    assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
-    setattr(cls, INTERFACE_CLASS_ATTR, True)
+def interface_class(service_name):
+    assert isinstance(service_name, str), 'service_name must be a string'
 
-    for name, obj in inspect.getmembers(cls, predicate=lambda x: inspect.isfunction(x) or inspect.ismethod(x)): # for python 2 and 3 support
-        @wraps(obj)
-        def wrapper(*args, **kwargs):
-            return obj(*args, **kwargs)
+    def set_interface_class(cls):
+        '''
+        wrap a class in which all methods are "entrypoints" by adding a flag to it, and is a template for service client
+        '''
+        setattr(cls, 'name', service_name)  # automatically assign the service name
 
-        setattr(wrapper, INTERFACE_CLASS_METHOD_ATTR, True)
+        assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
+        setattr(cls, INTERFACE_CLASS_ATTR, True)
 
-        setattr(cls, name, wrapper)
+        for name, obj in inspect.getmembers(cls, predicate=lambda x: inspect.isfunction(x) or inspect.ismethod(x)): # for python 2 and 3 support
+            @wraps(obj)
+            def wrapper(*args, **kwargs):
+                return obj(*args, **kwargs)
 
-    return cls
+            setattr(wrapper, INTERFACE_CLASS_METHOD_ATTR, True)
+
+            setattr(cls, name, wrapper)
+
+        return cls
+
+    return set_interface_class
 
 
 def service_class(cls):

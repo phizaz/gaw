@@ -33,7 +33,7 @@ class Entrypoint(object):
     @classmethod
     def decorator(cls, *args, **kwargs):
 
-        def registering_decorator(fn, args, kwargs):
+        def registering_decorator(fn):
             cls.mark_method_as_entrypoint(fn)
             return fn
 
@@ -42,13 +42,13 @@ class Entrypoint(object):
             # @foobar
             # def spam():
             #     pass
-            return registering_decorator(args[0], args=(), kwargs={})
+            return registering_decorator(args[0])
         else:
             # usage with arguments to the decorator:
             # @foobar('shrub', ...)
             # def spam():
             #     pass
-            return partial(registering_decorator, args=args, kwargs=kwargs)
+            return registering_decorator
 
 
 # export entrypoint

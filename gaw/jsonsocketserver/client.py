@@ -8,8 +8,6 @@ from gaw.serializable.serializable import Serializable
 import uuid
 import datetime
 import time
-import eventlet
-import traceback
 import errno
 
 class JsonSocketClient:
@@ -48,7 +46,7 @@ class JsonSocketClient:
                 print('jsonsocketclient: connection reset by peer retrying ...')
                 # delete the old client
                 self._delete(self._key(ip, port, secret, is_encrypt))
-                eventlet.sleep(1)
+                time.sleep(1)
                 # retry
                 continue
             except IOError as e:
@@ -56,7 +54,7 @@ class JsonSocketClient:
                     print('jsonsocketclient: connection error retrying ...')
                     # delete the old client
                     self._delete(self._key(ip, port, secret, is_encrypt))
-                    eventlet.sleep(1)
+                    time.sleep(1)
                     # retry
                     continue
                 else:
@@ -98,7 +96,7 @@ class JsonSocketClient:
                                         is_encrypt=is_encrypt)
             except Exception:
                 print('jsonsocketclient: host is down retrying ...')
-                eventlet.sleep(5)
+                time.sleep(5)
 
     def _get_client(self, ip, port, secret, is_encrypt):
         key = self._key(ip, port, secret, is_encrypt)

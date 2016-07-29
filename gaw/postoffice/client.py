@@ -1,8 +1,8 @@
 from __future__ import print_function, absolute_import
-from eventlet.green import socket
 from gaw.postoffice.core import send, recieve
 from gaw.postoffice.exceptions import PostofficeException
 import base64
+import socket
 from queue import Queue
 
 class PostofficeClient(object):
