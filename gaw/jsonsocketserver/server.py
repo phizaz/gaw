@@ -50,12 +50,12 @@ class JsonSocketServer:
             return Serializable.serialize(response)
 
         try:
-            if isinstance(request.payload, dict):
-                # params can only be a dictionary
-                params = request.payload
+            assert isinstance(request.payload, dict), 'request payload must be a dict of the function arguments'
+            params = request.payload
+            if len(params) > 0:
                 result = fn(path=path, **params)
             else:
-                assert request.payload.strip() == ''
+                # empty request payload
                 result = fn(path=path)
         except Exception as e:
             # catch all error, and propagate it to the requester

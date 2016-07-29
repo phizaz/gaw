@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -75,7 +77,148 @@ class PostofficeTest(unittest.TestCase):
         self.assertRaises(PostofficeException, test)
 
     def test_server_client(self):
-        self.assertTrue(False)
+        import time
+
+        send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+
+        def on_message(msg):
+            self.assertEqual(msg, send_msg)
+            return msg
+
+        def server():
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+
+        def client():
+            client = PostofficeClient(ip='localhost', port=4000)
+            response = client.send(send_msg)
+            self.assertEqual(response, send_msg)
+
+        from multiprocessing import Process
+        p = Process(target=server)
+        p.start()
+
+        time.sleep(0.1)
+        client()
+
+        p.terminate()
+        p.join()
+
+    def test_server_client_verbose(self):
+        import time
+
+        send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+
+        def on_message(msg):
+            self.assertEqual(msg, send_msg)
+
+        def server():
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, verbose=True)
+
+        def client():
+            client = PostofficeClient(ip='localhost', port=4000, verbose=True)
+            client.send(send_msg)
+
+        from multiprocessing import Process
+        p = Process(target=server)
+        p.start()
+
+        time.sleep(0.1)
+        client()
+
+        p.terminate()
+        p.join()
 
     def test_server_client_with_encryption(self):
-        self.assertTrue(False)
+        import time
+
+        secret = '6T0/bXKIqQTyFKQiOwJjhcqt8lNJTRhS'
+        send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+
+        def on_message(msg):
+            self.assertEqual(msg, send_msg)
+
+        def server():
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, secret=secret, is_encrypt=True)
+
+        def client():
+            client = PostofficeClient(ip='localhost', port=4000, secret=secret, is_encrypt=True)
+            client.send(send_msg)
+
+        def wrong_client_no_secret():
+            client = PostofficeClient(ip='localhost', port=4000)
+            client.send(send_msg)
+
+        def wrong_client_no_encryption():
+            client = PostofficeClient(ip='localhost', port=4000, secret=secret)
+            client.send(send_msg)
+
+        from multiprocessing import Process
+        p = Process(target=server)
+        p.start()
+
+        time.sleep(0.1)
+        client()
+
+        from gaw import PostofficeException
+        self.assertRaises(PostofficeException, wrong_client_no_secret)
+        self.assertRaises(PostofficeException, wrong_client_no_encryption)
+
+        p.terminate()
+        p.join()
+
+    def test_multiple_client(self):
+        import time
+        from multiprocessing.pool import ThreadPool
+
+        send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+
+        def on_message(msg):
+            self.assertEqual(msg, send_msg)
+
+        def server():
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+
+        def client(ith):
+            client = PostofficeClient(ip='localhost', port=4000)
+            client.send(send_msg)
+
+        from multiprocessing import Process
+        p = Process(target=server)
+        p.start()
+
+        time.sleep(0.1)
+
+        pool = ThreadPool(100)
+        pool.map(client, [i for i in range(100)])
+
+        p.terminate()
+        p.join()
+
+    def test_multiple_concurrent_request_on_same_client(self):
+        import time
+        from multiprocessing.pool import ThreadPool
+
+        send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+
+        def on_message(msg):
+            self.assertEqual(msg, send_msg)
+
+        def server():
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+
+        from multiprocessing import Process
+        p = Process(target=server)
+        p.start()
+
+        time.sleep(0.1)
+
+        c = PostofficeClient(ip='localhost', port=4000)
+
+        def client(ith):
+            c.send(send_msg)
+
+        pool = ThreadPool(100)
+        pool.map(client, [i for i in range(100)])
+
+        p.terminate()
+        p.join()

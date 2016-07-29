@@ -4,6 +4,7 @@ from gaw.postoffice.exceptions import ConnectionTerminated, PostofficeException
 import socketserver
 import base64
 import traceback
+from builtins import str as text
 
 class PostofficeServer:
 
@@ -47,7 +48,7 @@ class PostofficeServer:
 
                     try:
                         request = recieve(socket, POSTOFFICE.secret, is_encrypt=POSTOFFICE.is_encrypt)
-                        if POSTOFFICE.verbose: print('postoffice: get a message ', str(request)[:150], '...')
+                        if POSTOFFICE.verbose: print(u'postoffice: get a message {} ...'.format(text(request)[:150]))
                     except ConnectionTerminated:
                         if POSTOFFICE.verbose: print('postoffice: connection ended')
                         return
