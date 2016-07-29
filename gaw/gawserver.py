@@ -73,7 +73,7 @@ class GawServer(object):
 
 def interface_class(cls):
     '''
-    wrap a class in which all methods are "entrypoints", and is a template for service client
+    wrap a class in which all methods are "entrypoints" by adding a flag to it, and is a template for service client
     '''
     assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
     setattr(cls, INTERFACE_CLASS_ATTR, True)
