@@ -41,16 +41,22 @@ class JsonSocketServerTest(unittest.TestCase):
             client.request(ip='localhost', port=4000, path='d', payload=dict())
 
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        import time
-        time.sleep(0.1)
+            import time
+            time.sleep(0.1)
 
-        client()
-        self.assertRaises(JsonSocketException, wrong_client_path_not_found)
+            client()
+            self.assertRaises(JsonSocketException, wrong_client_path_not_found)
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_server_client_verbose(self):
         from multiprocessing import Process
@@ -78,12 +84,18 @@ class JsonSocketServerTest(unittest.TestCase):
             self.assertEqual(cc, 200)
 
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        import time
-        time.sleep(0.1)
+            import time
+            time.sleep(0.1)
 
-        client()
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e

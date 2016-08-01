@@ -3,7 +3,7 @@ from gaw.postoffice.core import send, recieve
 from gaw.postoffice.exceptions import PostofficeException
 import base64
 import socket
-from queue import Queue
+from threading import Lock
 
 class PostofficeClient(object):
 
@@ -17,13 +17,11 @@ class PostofficeClient(object):
         self.socket = socket.socket()
         self.socket.connect((ip, port))
 
-        self.run_token = Queue()
-        self.run_token.put(True)
+        self.lock = Lock()
 
     def send(self, data):
-        token = self.run_token.get()
-        result = self._process_job(data)
-        self.run_token.put(token)
+        with self.lock:
+            result = self._process_job(data)
         return result
 
     def _process_job(self, data):

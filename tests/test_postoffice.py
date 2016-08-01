@@ -95,13 +95,19 @@ class PostofficeTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
-        client()
+            time.sleep(0.1)
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_server_client_verbose(self):
         import time
@@ -120,13 +126,19 @@ class PostofficeTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
-        client()
+            time.sleep(0.1)
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_server_client_with_encryption(self):
         import time
@@ -154,17 +166,23 @@ class PostofficeTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
-        client()
+            time.sleep(0.1)
+            client()
 
-        from gaw import PostofficeException
-        self.assertRaises(PostofficeException, wrong_client_no_secret)
-        self.assertRaises(PostofficeException, wrong_client_no_encryption)
+            from gaw import PostofficeException
+            self.assertRaises(PostofficeException, wrong_client_no_secret)
+            self.assertRaises(PostofficeException, wrong_client_no_encryption)
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_multiple_client(self):
         import time
@@ -184,15 +202,21 @@ class PostofficeTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
 
-        pool = ThreadPool(100)
-        pool.map(client, [i for i in range(100)])
+            pool = ThreadPool(100)
+            pool.map(client, [i for i in range(100)])
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_multiple_concurrent_request_on_same_client(self):
         import time
@@ -208,17 +232,23 @@ class PostofficeTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
 
-        c = PostofficeClient(ip='localhost', port=4000)
+            c = PostofficeClient(ip='localhost', port=4000)
 
-        def client(ith):
-            c.send(send_msg)
+            def client(ith):
+                c.send(send_msg)
 
-        pool = ThreadPool(100)
-        pool.map(client, [i for i in range(100)])
+            pool = ThreadPool(100)
+            pool.map(client, [i for i in range(1000)])
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e

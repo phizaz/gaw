@@ -1,7 +1,7 @@
 try:
     import unittest2 as unittest
 except ImportError:
-    import unittest  # noqa
+    import unittest
 
 from gaw.entrypoint import Entrypoint, entrypoint
 

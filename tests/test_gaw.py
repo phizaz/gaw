@@ -6,6 +6,7 @@ except ImportError:
 from gaw import GawServer, GawClient
 import time
 
+
 class GawTest(unittest.TestCase):
     def test_run_service_entrypoint_style(self):
         from multiprocessing import Process
@@ -32,14 +33,20 @@ class GawTest(unittest.TestCase):
             self.assertEqual(service.mul(10, 20), 200)
 
         p = Process(target=service)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
 
-        client()
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_run_service_interface_style(self):
         from gaw import interface_class, service_class, client_class
@@ -71,14 +78,20 @@ class GawTest(unittest.TestCase):
             self.assertEqual(client.mul(10, 20), 200)
 
         p = Process(target=service)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
 
-        client()
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_port_properly_destroyed(self):
         from multiprocessing import Process
@@ -102,13 +115,19 @@ class GawTest(unittest.TestCase):
 
         def run_test():
             p = Process(target=service)
-            p.start()
+            try:
+                p.start()
 
-            time.sleep(0.1)
-            client()
+                time.sleep(0.1)
+                client()
 
-            p.terminate()
-            p.join()
+                p.terminate()
+                p.join()
+            except Exception as e:
+                # gracefully stop
+                p.terminate()
+                p.join()
+                raise e
 
         run_test()
         run_test()
@@ -155,13 +174,19 @@ class GawTest(unittest.TestCase):
             self.assertEqual(both.sum(), 30)
 
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
-        client()
+            time.sleep(0.1)
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_with_serializable(self):
         from gaw import Serializable, client_class, interface_class, service_class
@@ -179,6 +204,7 @@ class GawTest(unittest.TestCase):
             class Service(Interface):
                 def get(self, a, b):
                     return Response(a, b)
+
             GawServer(ip='0.0.0.0', port=4000).add(Service).run()
 
         def client():
@@ -192,13 +218,19 @@ class GawTest(unittest.TestCase):
 
         from multiprocessing import Process
         p = Process(target=server)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
-        client()
+            time.sleep(0.1)
+            client()
 
-        p.terminate()
-        p.join()
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
 
     def test_with_encryption(self):
         secret = 'rixIMTHM1tlRP3McKqhopU/18S+dIh8M'
@@ -248,18 +280,22 @@ class GawTest(unittest.TestCase):
             self.assertEqual(client.mul(10, 20), 200)
 
         p = Process(target=service)
-        p.start()
+        try:
+            p.start()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
 
-        client()
+            client()
 
-        from gaw import PostofficeException
+            from gaw import PostofficeException
 
-        self.assertRaises(PostofficeException, wrong_client_no_secret)
-        self.assertRaises(PostofficeException, wrong_client_no_encryption)
+            self.assertRaises(PostofficeException, wrong_client_no_secret)
+            self.assertRaises(PostofficeException, wrong_client_no_encryption)
 
-        p.terminate()
-        p.join()
-
-
+            p.terminate()
+            p.join()
+        except Exception as e:
+            # gracefully stop
+            p.terminate()
+            p.join()
+            raise e
