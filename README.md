@@ -90,6 +90,15 @@ service.add(MathService, hello_message='Hello!')
 service.run() # runs forever
 ```
 
+Note that you can put an `after_start_cb` to the `service.run()` such that the callback will be called when the start has jast been started like:
+
+```
+def started():
+	print('server is up')
+
+service.run(started) # will be trigged after the server is up and running
+```
+
 In the example above, you can guarantee that there should be only one MathEngine initiated.
 
 ## Improved Gaw
@@ -161,7 +170,7 @@ In the package, there are other two libraries that **Gaw** makes use of:
 1. **Postoffice** - serves as a low-level TCP socket communicator.
 2. **Json Web Server** - this's kinda like a http server for the mere socket world.
 
-## Securities
+## Data Authenticity and Data Confidentiality
 
 Since version 0.5, **Gaw** has been suppporting pre-shared key *AES CBC* encryption and *HMAC SHA256* digital signature to provide data authenticity and data cofidentiality.
 
