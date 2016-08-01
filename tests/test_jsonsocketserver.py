@@ -57,7 +57,7 @@ class JsonSocketServerTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_server_client_verbose(self):
         from multiprocessing import Process, Event
@@ -100,4 +100,4 @@ class JsonSocketServerTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise

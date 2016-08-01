@@ -85,7 +85,7 @@ def servicerunner_cli():
                 print('gawrunner: [err 48] port {} taken ... trynig another'.format(port))
                 continue
             else:
-                raise err
+                raise
 
 if __name__ == '__main__':
     servicerunner_cli()

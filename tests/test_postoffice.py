@@ -107,7 +107,7 @@ class PostofficeTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_server_client_verbose(self):
         import time
@@ -137,7 +137,7 @@ class PostofficeTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_server_client_with_encryption(self):
         import time
@@ -182,7 +182,7 @@ class PostofficeTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_multiple_client(self):
         import time
@@ -215,7 +215,7 @@ class PostofficeTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_multiple_concurrent_request_on_same_client(self):
         import time
@@ -251,4 +251,4 @@ class PostofficeTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise

@@ -41,7 +41,7 @@ class JsonSocketClient:
             try:
                 raw_response = client.send(raw_request)
             except PostofficeException as e:
-                raise e
+                raise
             except ConnectionTerminated as e:
                 print('jsonsocketclient: connection reset by peer retrying ...')
                 # delete the old client
@@ -59,7 +59,7 @@ class JsonSocketClient:
                     continue
                 else:
                     # unexpected error
-                    raise e
+                    raise
 
             if self.verbose:
                 print('jsonsocketclient: raw response ', raw_response)

@@ -43,7 +43,7 @@ class GawTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_run_service_interface_style(self):
         from gaw import interface_class, service_class, client_class
@@ -87,7 +87,7 @@ class GawTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_port_properly_destroyed(self):
         server_start = Event()
@@ -124,7 +124,7 @@ class GawTest(unittest.TestCase):
                 # gracefully stop
                 p.terminate()
                 p.join()
-                raise e
+                raise
 
         run_test()
         run_test()
@@ -184,7 +184,7 @@ class GawTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_with_serializable(self):
         from gaw import Serializable, client_class, interface_class, service_class
@@ -231,7 +231,7 @@ class GawTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
 
     def test_with_encryption(self):
         secret = 'rixIMTHM1tlRP3McKqhopU/18S+dIh8M'
@@ -299,4 +299,4 @@ class GawTest(unittest.TestCase):
             # gracefully stop
             p.terminate()
             p.join()
-            raise e
+            raise
