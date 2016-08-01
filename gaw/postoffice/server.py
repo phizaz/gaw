@@ -8,7 +8,7 @@ from builtins import str as text
 
 class PostofficeServer:
 
-    def __init__(self, ip, port, on_message, secret=None, is_encrypt=False, verbose=False):
+    def __init__(self, ip, port, on_message, secret=None, is_encrypt=False, verbose=False, after_start_cb=None):
         print('postoffice: listening on ip:', ip, 'port:', port, 'secret:', secret, 'is_encrypt:', is_encrypt)
 
         self.ip = ip
@@ -17,6 +17,7 @@ class PostofficeServer:
         self.secret = base64.b64decode(secret) if secret else None
         self.is_encrypt = is_encrypt
         self.verbose = verbose
+        self.after_start_cb = after_start_cb
 
         POSTOFFICE = self # shared with the classes inside
 
@@ -74,5 +75,11 @@ class PostofficeServer:
             pass
 
         self.server = ThreadedTCPServer((self.ip, self.port), TCPHandler)
+
+        # the server already started
+        if self.after_start_cb is not None:
+            assert hasattr(self.after_start_cb, '__call__'), 'after_start_cb should be a function'
+            self.after_start_cb()
+
         self.server.serve_forever()
 

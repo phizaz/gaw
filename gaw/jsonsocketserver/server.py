@@ -12,16 +12,21 @@ class JsonSocketServer:
         self.secret = secret
         self.is_encrypt = is_encrypt
         self.verbose = verbose
+        self.after_start_cb = None
 
         self._handle_by_route = dict()
 
     def register_route(self, path, handle):
         self._handle_by_route[path] = handle
 
-    def start(self):
+    def start(self, after_start_cb=None):
+        self.after_start_cb = after_start_cb
+        if self.after_start_cb is not None:
+            assert hasattr(self.after_start_cb, '__call__'), 'after start cb should be a function'
+
         PostofficeServer(self.ip, self.port, self._router,
                          secret=self.secret, is_encrypt=self.is_encrypt,
-                         verbose=self.verbose)
+                         verbose=self.verbose, after_start_cb=after_start_cb)
 
     # private
 

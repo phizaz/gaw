@@ -7,6 +7,7 @@ except ImportError:
 
 from gaw.postoffice.server import PostofficeServer
 from gaw.postoffice.client import PostofficeClient
+from multiprocessing import Event
 
 class PostofficeTest(unittest.TestCase):
 
@@ -80,13 +81,14 @@ class PostofficeTest(unittest.TestCase):
         import time
 
         send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+        server_start = Event()
 
         def on_message(msg):
             self.assertEqual(msg, send_msg)
             return msg
 
         def server():
-            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, after_start_cb=lambda: server_start.set())
 
         def client():
             client = PostofficeClient(ip='localhost', port=4000)
@@ -97,10 +99,8 @@ class PostofficeTest(unittest.TestCase):
         p = Process(target=server)
         try:
             p.start()
-
-            time.sleep(0.1)
+            server_start.wait()
             client()
-
             p.terminate()
             p.join()
         except Exception as e:
@@ -113,12 +113,13 @@ class PostofficeTest(unittest.TestCase):
         import time
 
         send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+        server_start = Event()
 
         def on_message(msg):
             self.assertEqual(msg, send_msg)
 
         def server():
-            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, verbose=True)
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, verbose=True, after_start_cb=lambda: server_start.set())
 
         def client():
             client = PostofficeClient(ip='localhost', port=4000, verbose=True)
@@ -128,10 +129,8 @@ class PostofficeTest(unittest.TestCase):
         p = Process(target=server)
         try:
             p.start()
-
-            time.sleep(0.1)
+            server_start.wait()
             client()
-
             p.terminate()
             p.join()
         except Exception as e:
@@ -145,12 +144,13 @@ class PostofficeTest(unittest.TestCase):
 
         secret = '6T0/bXKIqQTyFKQiOwJjhcqt8lNJTRhS'
         send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+        server_start = Event()
 
         def on_message(msg):
             self.assertEqual(msg, send_msg)
 
         def server():
-            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, secret=secret, is_encrypt=True)
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, secret=secret, is_encrypt=True, after_start_cb=lambda: server_start.set())
 
         def client():
             client = PostofficeClient(ip='localhost', port=4000, secret=secret, is_encrypt=True)
@@ -169,7 +169,7 @@ class PostofficeTest(unittest.TestCase):
         try:
             p.start()
 
-            time.sleep(0.1)
+            server_start.wait()
             client()
 
             from gaw import PostofficeException
@@ -189,12 +189,13 @@ class PostofficeTest(unittest.TestCase):
         from multiprocessing.pool import ThreadPool
 
         send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+        server_start = Event()
 
         def on_message(msg):
             self.assertEqual(msg, send_msg)
 
         def server():
-            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, after_start_cb=lambda: server_start.set())
 
         def client(ith):
             client = PostofficeClient(ip='localhost', port=4000)
@@ -204,9 +205,7 @@ class PostofficeTest(unittest.TestCase):
         p = Process(target=server)
         try:
             p.start()
-
-            time.sleep(0.1)
-
+            server_start.wait()
             pool = ThreadPool(100)
             pool.map(client, [i for i in range(100)])
 
@@ -223,19 +222,20 @@ class PostofficeTest(unittest.TestCase):
         from multiprocessing.pool import ThreadPool
 
         send_msg = u'test ฟนำีฟนำีฟนำีฟนำี'
+        server_start = Event()
 
         def on_message(msg):
             self.assertEqual(msg, send_msg)
 
         def server():
-            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message)
+            PostofficeServer(ip='0.0.0.0', port=4000, on_message=on_message, after_start_cb=lambda: server_start.set())
 
         from multiprocessing import Process
         p = Process(target=server)
         try:
             p.start()
 
-            time.sleep(0.1)
+            server_start.wait()
 
             c = PostofficeClient(ip='localhost', port=4000)
 

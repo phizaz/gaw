@@ -21,6 +21,7 @@ class GawServer(object):
         self.is_encrypt = is_encrypt
         self.verbose = verbose
         self.socketserver = JsonSocketServer(ip, port, secret=secret, is_encrypt=is_encrypt, verbose=verbose)
+        self.after_start_cb = None
 
         self.path = dict()
 
@@ -48,8 +49,12 @@ class GawServer(object):
 
         return self
 
-    def run(self):
-        self.socketserver.start()
+    def run(self, after_start_cb = None):
+        self.after_start_cb  =after_start_cb
+        if self.after_start_cb is not None:
+            assert hasattr(self.after_start_cb, '__call__'), 'after_start_cb should be a function'
+
+        self.socketserver.start(after_start_cb=after_start_cb)
 
     def router(self, path, **payload):
         if self.verbose:

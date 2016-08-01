@@ -4,12 +4,11 @@ except ImportError:
     import unittest  # noqa
 
 from gaw import GawServer, GawClient
-import time
-
+from multiprocessing import Process, Event
 
 class GawTest(unittest.TestCase):
     def test_run_service_entrypoint_style(self):
-        from multiprocessing import Process
+        server_start = Event()
 
         def service():
             from gaw import entrypoint
@@ -24,7 +23,7 @@ class GawTest(unittest.TestCase):
                 def mul(self, a, b):
                     return a * b
 
-            GawServer(ip='0.0.0.0', port=4000).add(Service).run()
+            GawServer(ip='0.0.0.0', port=4000).add(Service).run(lambda: server_start.set())
 
         def client():
             service = GawClient(ip='localhost', port=4000).ServiceEntrypointStyle
@@ -35,9 +34,7 @@ class GawTest(unittest.TestCase):
         p = Process(target=service)
         try:
             p.start()
-
-            time.sleep(0.1)
-
+            server_start.wait()
             client()
 
             p.terminate()
@@ -50,7 +47,8 @@ class GawTest(unittest.TestCase):
 
     def test_run_service_interface_style(self):
         from gaw import interface_class, service_class, client_class
-        from multiprocessing import Process
+
+        server_start = Event()
 
         @interface_class(service_name='ServiceInterfaceStyle')
         class Interface(object):
@@ -67,7 +65,7 @@ class GawTest(unittest.TestCase):
                 def mul(self, a, b):
                     return a * b
 
-            GawServer(ip='0.0.0.0', port=4000).add(Service).run()
+            GawServer(ip='0.0.0.0', port=4000).add(Service).run(lambda: server_start.set())
 
         def client():
             @client_class(ip='localhost', port=4000)
@@ -80,9 +78,7 @@ class GawTest(unittest.TestCase):
         p = Process(target=service)
         try:
             p.start()
-
-            time.sleep(0.1)
-
+            server_start.wait()
             client()
 
             p.terminate()
@@ -94,11 +90,12 @@ class GawTest(unittest.TestCase):
             raise e
 
     def test_port_properly_destroyed(self):
-        from multiprocessing import Process
+        server_start = Event()
+
         def service():
             from gaw import entrypoint
             class Service(object):
-                name = 'Service'
+                name = 'TestPortProperlyDestroyedService'
 
                 @entrypoint
                 def plus(self, a, b):
@@ -108,17 +105,17 @@ class GawTest(unittest.TestCase):
                 def mul(self, a, b):
                     return a * b
 
-            GawServer(ip='0.0.0.0', port=4000).add(Service).run()
+            GawServer(ip='0.0.0.0', port=4000).add(Service).run(lambda: server_start.set())
 
         def client():
-            GawClient(ip='localhost', port=4000).Service.plus(1, 2)
+            GawClient(ip='localhost', port=4000).TestPortProperlyDestroyedService.plus(1, 2)
 
         def run_test():
+            server_start.clear()
             p = Process(target=service)
             try:
                 p.start()
-
-                time.sleep(0.1)
+                server_start.wait()
                 client()
 
                 p.terminate()
@@ -134,7 +131,8 @@ class GawTest(unittest.TestCase):
 
     def test_multiple_service(self):
         from gaw import entrypoint
-        from multiprocessing import Process
+
+        server_start = Event()
 
         class A(object):
             name = 'A'
@@ -161,7 +159,7 @@ class GawTest(unittest.TestCase):
                 return A.a() + B.b()
 
         def server():
-            GawServer(ip='0.0.0.0', port=4000).add(A).add(B).add(Both).run()
+            GawServer(ip='0.0.0.0', port=4000).add(A).add(B).add(Both).run(lambda: server_start.set())
 
         def client():
             conn = GawClient(ip='localhost', port=4000)
@@ -177,7 +175,7 @@ class GawTest(unittest.TestCase):
         try:
             p.start()
 
-            time.sleep(0.1)
+            server_start.wait()
             client()
 
             p.terminate()
@@ -190,6 +188,9 @@ class GawTest(unittest.TestCase):
 
     def test_with_serializable(self):
         from gaw import Serializable, client_class, interface_class, service_class
+
+        server_start = Event()
+
         class Response(Serializable):
             def __init__(self, a, b):
                 self.a = a
@@ -205,7 +206,7 @@ class GawTest(unittest.TestCase):
                 def get(self, a, b):
                     return Response(a, b)
 
-            GawServer(ip='0.0.0.0', port=4000).add(Service).run()
+            GawServer(ip='0.0.0.0', port=4000).add(Service).run(lambda: server_start.set())
 
         def client():
             @client_class(ip='localhost', port=4000)
@@ -221,7 +222,7 @@ class GawTest(unittest.TestCase):
         try:
             p.start()
 
-            time.sleep(0.1)
+            server_start.wait()
             client()
 
             p.terminate()
@@ -236,7 +237,8 @@ class GawTest(unittest.TestCase):
         secret = 'rixIMTHM1tlRP3McKqhopU/18S+dIh8M'
 
         from gaw import interface_class, service_class, client_class
-        from multiprocessing import Process
+
+        server_start = Event()
 
         @interface_class(service_name='ServiceInterfaceStyle')
         class Interface(object):
@@ -253,7 +255,7 @@ class GawTest(unittest.TestCase):
                 def mul(self, a, b):
                     return a * b
 
-            GawServer(ip='0.0.0.0', port=4000, secret=secret, is_encrypt=True).add(Service).run()
+            GawServer(ip='0.0.0.0', port=4000, secret=secret, is_encrypt=True).add(Service).run(lambda: server_start.set())
 
         def client():
             @client_class(ip='localhost', port=4000, secret=secret, is_encrypt=True)
@@ -283,8 +285,7 @@ class GawTest(unittest.TestCase):
         try:
             p.start()
 
-            time.sleep(0.1)
-
+            server_start.wait()
             client()
 
             from gaw import PostofficeException

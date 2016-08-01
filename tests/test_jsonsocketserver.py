@@ -12,25 +12,30 @@ from gaw import JsonSocketException
 
 class JsonSocketServerTest(unittest.TestCase):
     def test_server_client(self):
-        from multiprocessing import Process
+        from multiprocessing import Process, Event
 
-        def a(path): return path
+        server_start = Event()
 
-        def b(path, a, b): return a + b
+        def a(path):
+            return path
 
-        def c(path, a, b): return a * b
+        def b(path, a, b):
+            return a + b
+
+        def c(path, a, b):
+            return a * b
 
         def server():
             server = JsonSocketServer(ip='0.0.0.0', port=4000)
-            server.register_route(u'a ฟนำี', a) # unicode path
+            server.register_route(u'a ฟนำี', a)  # unicode path
             server.register_route('b', b)
             server.register_route('c', c)
-            server.start()
+            server.start(lambda: server_start.set())
 
         def client():
             client = JsonSocketClient()
             aa = client.request(ip='localhost', port=4000, path=u'a ฟนำี', payload=dict())
-            self.assertEqual(aa, u'a ฟนำี') # return the path unicode
+            self.assertEqual(aa, u'a ฟนำี')  # return the path unicode
             bb = client.request(ip='localhost', port=4000, path='b', payload=dict(a=1, b=2))
             self.assertEqual(bb, 3)
             cc = client.request(ip='localhost', port=4000, path='c', payload=dict(a=10, b=20))
@@ -43,13 +48,9 @@ class JsonSocketServerTest(unittest.TestCase):
         p = Process(target=server)
         try:
             p.start()
-
-            import time
-            time.sleep(0.1)
-
+            server_start.wait()
             client()
             self.assertRaises(JsonSocketException, wrong_client_path_not_found)
-
             p.terminate()
             p.join()
         except Exception as e:
@@ -59,20 +60,25 @@ class JsonSocketServerTest(unittest.TestCase):
             raise e
 
     def test_server_client_verbose(self):
-        from multiprocessing import Process
+        from multiprocessing import Process, Event
 
-        def a(path): return path
+        server_start = Event()
 
-        def b(path, a, b): return a + b
+        def a(path):
+            return path
 
-        def c(path, a, b): return a * b
+        def b(path, a, b):
+            return a + b
+
+        def c(path, a, b):
+            return a * b
 
         def server():
             server = JsonSocketServer(ip='0.0.0.0', port=4000, verbose=True)
             server.register_route(u'a ฟนำี', a)
             server.register_route('b', b)
             server.register_route('c', c)
-            server.start()
+            server.start(lambda: server_start.set())
 
         def client():
             client = JsonSocketClient(verbose=True)
@@ -86,12 +92,8 @@ class JsonSocketServerTest(unittest.TestCase):
         p = Process(target=server)
         try:
             p.start()
-
-            import time
-            time.sleep(0.1)
-
+            server_start.wait()
             client()
-
             p.terminate()
             p.join()
         except Exception as e:
