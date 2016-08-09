@@ -129,7 +129,7 @@ class JsonSocketClient:
                                         secret=secret,
                                         is_encrypt=is_encrypt)
             except Exception:
-                print('jsonsocketclient: host is down retrying ...')
+                print('jsonsocketclient: host is down retrying ... ip: {} port: {}'.format(ip, port))
                 if retry_no == retries:
                     raise
                 time.sleep(5)
