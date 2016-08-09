@@ -7,7 +7,7 @@ from functools import wraps
 
 class GawClient(object):
     def __init__(self, ip, port, secret=None, is_encrypt=False,
-                 connection_lifetime=30, verbose=False,
+                 connection_lifetime=30, verbose=False, retries=-1,
                  _request_maker=None,
                  _state=0, _service_name=None, _method_name=None):
 
@@ -17,6 +17,7 @@ class GawClient(object):
         self.is_encrypt = is_encrypt
         self.connection_lifetime = connection_lifetime
         self.verbose = verbose
+        self.retries = retries
 
         if _request_maker is None:
             self._request_maker = JsonSocketClient(client_lifetime=connection_lifetime, verbose=verbose)
@@ -38,6 +39,7 @@ class GawClient(object):
                 secret=self.secret, is_encrypt=self.is_encrypt,
                 connection_lifetime=self.connection_lifetime,
                 verbose=self.verbose,
+                retries=self.retries,
                 _request_maker=self._request_maker,
                 _state=state,
                 _service_name=service_name,
@@ -53,6 +55,7 @@ class GawClient(object):
                 port=self.port,
                 secret=self.secret,
                 is_encrypt=self.is_encrypt,
+                retries=self.retries,
                 request_maker=self._request_maker,
                 verbose=self.verbose
             )
@@ -60,7 +63,7 @@ class GawClient(object):
             raise ValueError('state not recognized')
 
     def get_procedure_caller(self, service_name, method_name,
-                             ip, port, secret, is_encrypt,
+                             ip, port, secret, is_encrypt, retries,
                              request_maker, verbose):
         assert isinstance(request_maker, JsonSocketClient), 'request maker should be a jsonsocketclient'
         path = '{}/{}'.format(service_name, method_name)
@@ -72,6 +75,7 @@ class GawClient(object):
             # note: parsing and serializing the response is now the job of json socket server
             response = request_maker.request(ip=ip, port=port, path=path,
                                              secret=secret, is_encrypt=is_encrypt,
+                                             retries=retries,
                                              payload=dict(
                                                  args=args,
                                                  kwargs=kwargs
@@ -82,13 +86,13 @@ class GawClient(object):
         return rpc
 
 
-def client_class(ip, port, secret=None, is_encrypt=False, connection_lifetime=30, verbose=False):
+def client_class(ip, port, secret=None, is_encrypt=False, connection_lifetime=30, verbose=False, retries=-1):
     '''
     GawClient class decorator, the class must inherit from a class of Interface, decorated using interface_class
     this client will directly point to that service
     '''
     client = GawClient(ip=ip, port=port, secret=secret, is_encrypt=is_encrypt, connection_lifetime=connection_lifetime,
-                       verbose=verbose)
+                       verbose=verbose, retries=retries)
 
     def decorator(cls):
         base = [

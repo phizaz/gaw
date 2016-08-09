@@ -6,6 +6,7 @@ except ImportError:
 from gaw import GawServer, GawClient
 from multiprocessing import Process, Event
 
+
 class GawTest(unittest.TestCase):
     def test_run_service_entrypoint_style(self):
         server_start = Event()
@@ -255,7 +256,8 @@ class GawTest(unittest.TestCase):
                 def mul(self, a, b):
                     return a * b
 
-            GawServer(ip='0.0.0.0', port=4000, secret=secret, is_encrypt=True).add(Service).run(lambda: server_start.set())
+            GawServer(ip='0.0.0.0', port=4000, secret=secret, is_encrypt=True).add(Service).run(
+                lambda: server_start.set())
 
         def client():
             @client_class(ip='localhost', port=4000, secret=secret, is_encrypt=True)
@@ -300,3 +302,36 @@ class GawTest(unittest.TestCase):
             p.terminate()
             p.join()
             raise
+
+
+class GawClientRetryTest(unittest.TestCase):
+    def test_host_is_down(self):
+        from gaw import interface_class, service_class, client_class
+
+        server_start = Event()
+
+        @interface_class(service_name='ServiceInterfaceStyle')
+        class Interface(object):
+            def ping(self): pass
+
+        def server():
+            @service_class
+            class Service(Interface):
+                def ping(self): return True
+
+            GawServer(ip='0.0.0.0', port=4000).add(Service).run(lambda: server_start.set())
+
+        def client():
+            @client_class(ip='localhost', port=4000, retries=0)  # do not retry
+            class Client(Interface): pass
+
+            self.assertRaises(Exception, Client().ping)
+
+        p = Process(target=server)
+        p.start()
+
+        server_start.wait()
+        p.terminate()
+        p.join()
+
+        client()

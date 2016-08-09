@@ -101,3 +101,42 @@ class JsonSocketServerTest(unittest.TestCase):
             p.terminate()
             p.join()
             raise
+
+
+class JsonSocketServerFailTest(unittest.TestCase):
+
+    def test_host_is_down(self):
+        from multiprocessing import Event, Process
+
+        server_start = Event()
+
+        def a(path):
+            return path
+
+        def b(path, a, b):
+            return a + b
+
+        def c(path, a, b):
+            return a * b
+
+        def server():
+            server = JsonSocketServer(ip='0.0.0.0', port=4000, verbose=True)
+            server.register_route(u'a ฟนำี', a)
+            server.register_route('b', b)
+            server.register_route('c', c)
+            server.start(lambda: server_start.set())
+
+        def client():
+            client = JsonSocketClient(verbose=True)
+            self.assertRaises(Exception, client.request, ip='localhost', port=4000, path=u'a ฟนำี', payload=dict(), retries=0)
+
+        p = Process(target=server)
+        p.start()
+
+        server_start.wait()
+
+        p.terminate()
+        p.join()
+
+        client()
+

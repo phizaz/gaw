@@ -10,8 +10,8 @@ import datetime
 import time
 import errno
 
-class JsonSocketClient:
 
+class JsonSocketClient:
     def __init__(self, client_lifetime=30, verbose=False):
         self.client_lifetime = client_lifetime
         self.verbose = verbose
@@ -24,14 +24,23 @@ class JsonSocketClient:
         self._cleaner.daemon = True
         self._cleaner.start()
 
-    def request(self, ip, port, path, payload, secret=None, is_encrypt=False):
+    def request(self, ip, port, path, payload, secret=None, is_encrypt=False, retries=-1):
         # may retry many times
-        while True:
-            client = self._get_client(ip, port, secret, is_encrypt)
+        from builtins import range
+        if retries == -1:
+            from itertools import count
+            retries_range = count()
+        else:
+            retries_range = range(retries + 1)
+
+        for retry_no in retries_range:
+            if self.verbose: print('jsonsocketclient: retry no:', retry_no, 'of', retries)
+
+            client = self._get_client(ip, port, secret, is_encrypt, retries)
             assert isinstance(client, PostofficeClient)
 
-            # if self.verbose:
-            #     print('jsonsocketclient: requesting ip', ip, 'port', port, 'path', path, 'payload', payload)
+            if self.verbose:
+                print('jsonsocketclient: requesting ip', ip, 'port', port, 'path', path, 'payload', payload)
 
             request = RequestDataType(id=uuid.uuid1().int,
                                       path=path,
@@ -43,19 +52,33 @@ class JsonSocketClient:
             except PostofficeException as e:
                 raise
             except ConnectionTerminated as e:
-                print('jsonsocketclient: connection reset by peer retrying ...')
+                print('jsonsocketclient: connection reset by peer ... path: ', path, 'ip:', ip, 'port:', port)
                 # delete the old client
                 self._delete(self._key(ip, port, secret, is_encrypt))
+
+                if retry_no == retries:
+                    raise
+
                 time.sleep(1)
                 # retry
                 continue
             except IOError as e:
                 if e.errno == errno.EPIPE:
-                    print('jsonsocketclient: connection error retrying ...')
+                    print('jsonsocketclient: connection error ... path:', path, 'ip:', ip, 'port:', port)
                     # delete the old client
                     self._delete(self._key(ip, port, secret, is_encrypt))
+                    if retry_no == retries:
+                        raise
                     time.sleep(1)
                     # retry
+                    continue
+                if e.errno == errno.ECONNRESET:
+                    print('jsonsocketclient: connection reset by peer (ECONNRESET) ... path:', path, 'ip:', ip, 'port:',
+                          port)
+                    self._delete(self._key(ip, port, secret, is_encrypt))
+                    if retry_no == retries:
+                        raise
+                    time.sleep(1)
                     continue
                 else:
                     # unexpected error
@@ -85,24 +108,37 @@ class JsonSocketClient:
     def _key(self, ip, port, secret, is_encrypt):
         return '{}:{}:{}:{}'.format(ip, port, secret, is_encrypt)
 
-    def _init_client(self, ip, port, secret, is_encrypt):
+    def _init_client(self, ip, port, secret, is_encrypt, retries):
+        from builtins import range
         # may retry connection many times
-        while True:
+        if retries == -1:
+            from itertools import count
+            retry_range = count()
+        else:
+            retry_range = range(retries + 1)
+
+
+        for retry_no in retry_range:
+            if self.verbose: print('jsonsocketclient: init retry no:', retry_no, 'of', retries)
             try:
                 if self.verbose:
-                    print('jsonsocketclient: init client ip: {} port: {} secret: {} is_encrypt: {}'.format(ip, port, secret, is_encrypt))
+                    print('jsonsocketclient: init client ip: {} port: {} secret: {} is_encrypt: {}'.format(ip, port,
+                                                                                                           secret,
+                                                                                                           is_encrypt))
                 return PostofficeClient(ip, port, verbose=self.verbose,
                                         secret=secret,
                                         is_encrypt=is_encrypt)
             except Exception:
                 print('jsonsocketclient: host is down retrying ...')
+                if retry_no == retries:
+                    raise
                 time.sleep(5)
 
-    def _get_client(self, ip, port, secret, is_encrypt):
+    def _get_client(self, ip, port, secret, is_encrypt, retries):
         key = self._key(ip, port, secret, is_encrypt)
 
         if key not in self._client_pool:
-            self._client_pool[key] = self._init_client(ip, port, secret, is_encrypt)
+            self._client_pool[key] = self._init_client(ip, port, secret, is_encrypt, retries)
 
         self._last_act_at[key] = datetime.datetime.now()
         self._is_busy[key] = True
@@ -119,7 +155,7 @@ class JsonSocketClient:
 
     def _cleaner(self):
         while True:
-            time.sleep(10) # cleaning interval
+            time.sleep(10)  # cleaning interval
             now = datetime.datetime.now()
 
             for key in list(self._client_pool.keys()):

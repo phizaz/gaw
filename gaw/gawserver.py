@@ -8,12 +8,13 @@ from abc import abstractmethod
 INTERFACE_CLASS_ATTR = '__gaw_interface_class__'
 INTERFACE_CLASS_METHOD_ATTR = '__gaw_interface_class_method__'
 
+
 def pluck(d, *args):
     assert isinstance(d, dict)
     return (d[arg] for arg in args)
 
-class GawServer(object):
 
+class GawServer(object):
     def __init__(self, ip, port, secret=None, is_encrypt=False, verbose=False):
         self.ip = ip
         self.port = port
@@ -49,8 +50,8 @@ class GawServer(object):
 
         return self
 
-    def run(self, after_start_cb = None):
-        self.after_start_cb  =after_start_cb
+    def run(self, after_start_cb=None):
+        self.after_start_cb = after_start_cb
         if self.after_start_cb is not None:
             assert hasattr(self.after_start_cb, '__call__'), 'after_start_cb should be a function'
 
@@ -76,6 +77,7 @@ class GawServer(object):
 
         return result
 
+
 def interface_class(service_name):
     assert isinstance(service_name, str), 'service_name must be a string'
 
@@ -88,7 +90,8 @@ def interface_class(service_name):
         assert hasattr(cls, 'name'), 'intf_cls should have a name defined'
         setattr(cls, INTERFACE_CLASS_ATTR, True)
 
-        for name, obj in inspect.getmembers(cls, predicate=lambda x: inspect.isfunction(x) or inspect.ismethod(x)): # for python 2 and 3 support
+        for name, obj in inspect.getmembers(cls, predicate=lambda x: inspect.isfunction(x) or inspect.ismethod(
+                x)):  # for python 2 and 3 support
             @wraps(obj)
             def wrapper(*args, **kwargs):
                 return obj(*args, **kwargs)
@@ -133,6 +136,7 @@ def service_class(cls):
         @wraps(method)
         def wrapper(*args, **kwargs):
             return method(*args, **kwargs)
+
         return wrapper
 
     for name in intf_methods:
