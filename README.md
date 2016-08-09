@@ -147,6 +147,16 @@ Now, IDE's code suggestion will work normally on the remote service (of course, 
 
 *Note: it supports python 3.4, and tested with python 2.7.9*
 
+## Options
+
+```
+from gaw import GawClient
+
+GawClient(ip, port, secret=None, is_encrypt=False, connection_lifetime=30, verbose=False, retries=-1)
+```
+
+`retries` is the number of retries (if anything fails), `-1` indefinitely, `0` no retry such that if anything should fail, an exception would be raised, `N` (int) the number of retries
+
 ## Installation
 
 ```
